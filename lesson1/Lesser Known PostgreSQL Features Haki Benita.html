@@ -1,0 +1,1996 @@
+<!DOCTYPE html>
+<html lang="en" class=""><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Lesser Known PostgreSQL Features | Haki Benita</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="referrer" content="origin-when-cross-origin">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src https://app.hex.tech; script-src 'self' https://goat.hakibenita.com 'unsafe-inline' https://www.google-analytics.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' https://www.google-analytics.com *.googleusercontent.com stats.g.doubleclick.net www.googletagmanager.com https://goat.hakibenita.com; worker-src 'none'; connect-src 'self' https://www.google-analytics.com; frame-src 'self' https://app.hex.tech;">
+    <meta name="description" content="A list of useful features you already have, but may not know about! In this article I share lesser known features of PostgreSQL.">
+    <meta name="copyright" content="Haki Benita">
+    <link rel="shortcut icon" type="image/png" href="https://hakibenita.com/images/favicon-32x32.png">
+    <link href="https://hakibenita.com/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Haki Benita Full Atom Feed">
+
+    <script type="text/javascript" async="" src="Lesser%20Known%20PostgreSQL%20Features%20Haki%20Benita_files/js_002"></script><script async="" src="Lesser%20Known%20PostgreSQL%20Features%20Haki%20Benita_files/js"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-X3JBQ4MERY');
+    </script>
+
+    <script async="" src="Lesser%20Known%20PostgreSQL%20Features%20Haki%20Benita_files/analytics.js"></script>
+    <script>
+        window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments);};ga.l=+(new Date());
+        ga('create', 'UA-131229086-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+    <script>
+        window.goatcounter = {
+            path: location.pathname || '/',
+            referrer: function() {
+                return goatcounter.get_query('utm_source') || document.referrer;
+            },
+        };
+        document.addEventListener('DOMContentLoaded', () => {
+            const baseUrl = `${location.protocol}//${location.host}`
+            Array.from(document.querySelectorAll('a[href]'))
+            .filter(a => !a.href.startsWith(baseUrl))
+            .forEach(a => a.addEventListener('click', () => window.goatcounter.count({
+                path: p => `outgoing:${p}:${a.textContent}`,
+                title: a.textContent,
+                event: true,
+            })));
+        });
+    </script>
+    <script data-goatcounter="https://goat.hakibenita.com:/count" async="" src="Lesser%20Known%20PostgreSQL%20Features%20Haki%20Benita_files/count.js"></script>
+
+    <script>
+    (function(window, document) {
+        // JS
+        document.documentElement.classList.remove('nojs');
+
+        // Theme
+        const prefersDarkColorScheme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const selectedTheme = window.localStorage.getItem('theme');
+        if (selectedTheme === 'dark' || (!selectedTheme && prefersDarkColorScheme)) {
+            document.documentElement.classList.add('dark');
+            ga('set', 'dimension1', 'dark');
+        } else {
+            ga('set', 'dimension1', 'light');
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleButton = document.querySelector('.toggle-theme');
+            toggleButton && toggleButton.addEventListener('click', () => {
+                const wasLight = document.documentElement.classList.toggle('dark');
+                const theme = wasLight ? 'dark' : 'light';
+                ga('set', 'dimension1', theme);
+                ga('send', 'event', 'theme', 'switched theme', theme, 1);
+                window.localStorage.setItem('theme', theme);
+            });
+        });
+    })(window, document);
+    </script>
+    <link rel="stylesheet" type="text/css" href="Lesser%20Known%20PostgreSQL%20Features%20Haki%20Benita_files/style.css">
+    <link rel="stylesheet" type="text/css" href="Lesser%20Known%20PostgreSQL%20Features%20Haki%20Benita_files/pygment.css">
+
+    <link rel="canonical" href="https://hakibenita.com/postgresql-unknown-features">
+
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@be_haki">
+    <meta name="twitter:creator" content="@be_haki">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Lesser Known PostgreSQL Features">
+    <meta property="og:description" content="Features you already have but may not know about!">
+    <meta property="og:url" content="https://hakibenita.com/postgresql-unknown-features">
+    <meta property="og:image" content="https://hakibenita.com/images/00-postgresql-unknown-features.png">
+
+    <meta name="subtitle" content="Features you already have but may not know about!">
+    <meta name="author" content="Haki Benita">
+    <meta name="date" content="2021-11-08">
+    <meta name="tags" content="PostgreSQL">
+
+</head>
+
+<body class="">
+
+    <nav>
+        <a class="logo" href="https://hakibenita.com/">Haki Benita</a>
+        <ul>
+
+                <li><a href="https://hakibenita.com/pages/about">About</a></li>
+                <li><a href="https://hakibenita.com/subscribe">Subscribe</a></li>
+
+        </ul>
+        <button title="Switch Theme" aria-label="Switch Theme" class="toggle-theme">
+            <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="icon-moon">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+
+            <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-sun">
+                <circle cx="12" cy="12" r="5" fill="currentColor"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+        </button>
+    </nav>
+
+    <main>
+<div class="article">
+    <header class="article__header">
+<ul class="article__info">
+    <li>
+        <time class="published" datetime="2021-11-08">08 November 2021</time>
+    </li>
+
+    <li>
+        <a class="tag" href="https://hakibenita.com/tag/postgresql">PostgreSQL</a>    </li>
+</ul>        <h1>Lesser Known PostgreSQL Features</h1>
+        <h2>Features you already have but may not know about!</h2>
+    </header>
+
+    <article class="article__content" data-progress-indicator="">
+        <hr>
+<p>In 2006 Microsoft conducted a customer survey to find what new 
+features users want in new versions of Microsoft Office. To their 
+surprise, more than 90% of what users asked for already existed, they 
+just didn't know about it. To address the "discoverability" issue, they 
+came up with the "Ribbon UI" that we know from Microsoft Office products
+ today.</p>
+<p>Office is not unique in this sense. Most of us are not aware of all 
+the features in tools we use on a daily basis, especially if it's big 
+and extensive like PostgreSQL. With PostgreSQL 14 released just a few 
+weeks ago, what a better opportunity to shed a light on some lesser 
+known features that already exist in PostgreSQL, but you may not know.</p>
+<p><strong>In this article I present lesser known features of PostgreSQL.</strong></p>
+<div class="dark--invert">
+<figure><img alt="&lt;small&gt;Illustration by &lt;a href=&quot;https://www.instagram.com/_wrightdesign/&quot;&gt;Eleanor Wright&lt;/a&gt;&lt;/small&gt;" src="Lesser%20Known%20PostgreSQL%20Features%20Haki%20Benita_files/00-postgresql-unknown-features.png"><figcaption><small>Illustration by <a href="https://www.instagram.com/_wrightdesign/">Eleanor Wright</a></small></figcaption>
+</figure>
+</div>
+<p></p><details class="toc-container" open="">
+    <summary>Table of Contents</summary><p></p>
+<div class="toc">
+<ul>
+<li><a href="#get-the-number-of-updated-and-inserted-rows-in-an-upsert">Get the Number of Updated and Inserted Rows in an Upsert</a></li>
+<li><a href="#grant-permissions-on-specific-columns">Grant Permissions on Specific Columns</a></li>
+<li><a href="#match-against-multiple-patterns">Match Against Multiple Patterns</a></li>
+<li><a href="#find-the-current-value-of-a-sequence-without-advancing-it">Find the Current Value of a Sequence Without Advancing It</a></li>
+<li><a href="#use-copy-with-multi-line-sql">Use \copy With Multi-line SQL</a></li>
+<li><a href="#prevent-setting-the-value-of-an-auto-generated-key">Prevent Setting the Value of an Auto Generated Key</a></li>
+<li><a href="#two-more-ways-to-produce-a-pivot-table">Two More Ways to Produce a Pivot Table</a></li>
+<li><a href="#dollar-quoting">Dollar Quoting</a></li>
+<li><a href="#comment-on-database-objects">Comment on Database Objects</a></li>
+<li><a href="#keep-a-separate-history-file-per-database">Keep a Separate History File Per Database</a></li>
+<li><a href="#autocomplete-reserved-words-in-uppercase">Autocomplete Reserved Words in Uppercase</a></li>
+<li><a href="#sleep-for-interval">Sleep for Interval</a></li>
+<li><a href="#get-the-first-or-last-row-in-a-group-without-sub-queries">Get the First or Last Row in a Group Without Sub-Queries</a></li>
+<li><a href="#generate-uuid-without-extensions">Generate UUID Without Extensions</a></li>
+<li><a href="#generate-reproducible-random-data">Generate Reproducible Random Data</a></li>
+<li><a href="#add-constraints-without-validating-immediately">Add Constraints Without Validating Immediately</a></li>
+<li><a href="#synonyms-in-postgresql">Synonyms in PostgreSQL</a></li>
+<li><a href="#find-overlapping-ranges">Find Overlapping Ranges</a></li>
+</ul>
+</div>
+<p></p></details><p></p>
+<hr>
+<h2 id="get-the-number-of-updated-and-inserted-rows-in-an-upsert"><a class="toclink" href="#get-the-number-of-updated-and-inserted-rows-in-an-upsert">Get the Number of Updated and Inserted Rows in an Upsert</a></h2>
+<p><code>INSERT ON CONFLICT</code>, also known as "merge" (in Oracle) or
+ "upsert" (a mashup of UPDATE and INSERT), is a very useful command, 
+especially in ETL processes. Using the <code>ON CONFLICT</code> clause of an <code>INSERT</code> statement, you can tell the database what to do when a collision is detected in one or more key columns.</p>
+<p>For example, here is a query to sync data in an employees table:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">WITH</span> <span class="n">new_employees</span> <span class="k">AS</span> <span class="p">(</span>
+    <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="p">(</span><span class="k">VALUES</span>
+        <span class="p">(</span><span class="s1">'George'</span><span class="p">,</span> <span class="s1">'Sales'</span><span class="p">,</span>    <span class="s1">'Manager'</span><span class="p">,</span>   <span class="mf">1000</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'Jane'</span><span class="p">,</span>   <span class="s1">'R&amp;D'</span><span class="p">,</span>      <span class="s1">'Developer'</span><span class="p">,</span> <span class="mf">1200</span><span class="p">)</span>
+    <span class="p">)</span> <span class="k">AS</span> <span class="n">t</span><span class="p">(</span>
+         <span class="k">name</span><span class="p">,</span>      <span class="n">department</span><span class="p">,</span> <span class="k">role</span><span class="p">,</span>       <span class="n">salary</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">employees</span> <span class="p">(</span><span class="k">name</span><span class="p">,</span> <span class="n">department</span><span class="p">,</span> <span class="k">role</span><span class="p">,</span> <span class="n">salary</span><span class="p">)</span>
+<span class="k">SELECT</span> <span class="k">name</span><span class="p">,</span> <span class="n">department</span><span class="p">,</span> <span class="k">role</span><span class="p">,</span> <span class="n">salary</span>
+<span class="k">FROM</span> <span class="n">new_employees</span>
+<span class="hll"><span class="k">ON</span> <span class="n">CONFLICT</span> <span class="p">(</span><span class="k">name</span><span class="p">)</span> <span class="k">DO</span> <span class="k">UPDATE</span> <span class="k">SET</span>
+</span>    <span class="n">department</span> <span class="o">=</span> <span class="n">EXCLUDED</span><span class="mf">.</span><span class="n">department</span><span class="p">,</span>
+    <span class="k">role</span> <span class="o">=</span> <span class="n">EXCLUDED</span><span class="mf">.</span><span class="k">role</span><span class="p">,</span>
+    <span class="n">salary</span> <span class="o">=</span> <span class="n">EXCLUDED</span><span class="mf">.</span><span class="n">salary</span>
+<span class="k">RETURNING</span> <span class="o">*</span><span class="p">;</span>
+
+<span class="go">  name  │ department │   role    │ salary</span>
+<span class="go">────────┼────────────┼───────────┼────────</span>
+<span class="go"> George │ Sales      │ Manager   │   1000</span>
+<span class="go"> Jane   │ R&amp;D        │ Developer │   1200</span>
+<span class="go">INSERT 0 2</span>
+</pre></div>
+
+
+<p>The query inserts new employee data to the table. If there is an 
+attempt to add an employee with a name that already exists, the query 
+will update that row instead.</p>
+<div class="admonition tip">
+<p class="admonition-title">RETURNING *</p>
+<p>Check out how to <a href="https://hakibenita.com/sql-tricks-application-dba#implement-complete-processes-using-with-and-returning">implement complete processes using <code>WITH</code> and <code>RETURNING</code></a>.</p>
+</div>
+<p>You can see from the output of the command above, <code>INSERT 0 2</code>, that two employees were affected. But how many were inserted, and how many were updated? The output is not giving us any clue!</p>
+<p>While I was looking for a way to improve the logging of some ETL process that used such query, I stumbled upon <a href="https://stackoverflow.com/a/39204667/2000875" rel="noopener">this Stack Overflow answer</a> that suggested a pretty clever solution to this exact problem:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">WITH</span> <span class="n">new_employees</span> <span class="k">AS</span> <span class="p">(</span>
+    <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="p">(</span><span class="k">VALUES</span>
+        <span class="p">(</span><span class="s1">'George'</span><span class="p">,</span> <span class="s1">'Sales'</span><span class="p">,</span>    <span class="s1">'Manager'</span><span class="p">,</span>   <span class="mf">1000</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'Jane'</span><span class="p">,</span>   <span class="s1">'R&amp;D'</span><span class="p">,</span>      <span class="s1">'Developer'</span><span class="p">,</span> <span class="mf">1200</span><span class="p">)</span>
+    <span class="p">)</span> <span class="k">AS</span> <span class="n">t</span><span class="p">(</span>
+         <span class="k">name</span><span class="p">,</span>      <span class="n">department</span><span class="p">,</span> <span class="k">role</span><span class="p">,</span>       <span class="n">salary</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">employees</span> <span class="p">(</span><span class="k">name</span><span class="p">,</span> <span class="n">department</span><span class="p">,</span> <span class="k">role</span><span class="p">,</span> <span class="n">salary</span><span class="p">)</span>
+<span class="k">SELECT</span> <span class="k">name</span><span class="p">,</span> <span class="n">department</span><span class="p">,</span> <span class="k">role</span><span class="p">,</span> <span class="n">salary</span>
+<span class="k">FROM</span> <span class="n">new_employees</span>
+<span class="k">ON</span> <span class="n">CONFLICT</span> <span class="p">(</span><span class="k">name</span><span class="p">)</span> <span class="k">DO</span> <span class="k">UPDATE</span> <span class="k">SET</span>
+    <span class="n">department</span> <span class="o">=</span> <span class="n">EXCLUDED</span><span class="mf">.</span><span class="n">department</span><span class="p">,</span>
+    <span class="k">role</span> <span class="o">=</span> <span class="n">EXCLUDED</span><span class="mf">.</span><span class="k">role</span><span class="p">,</span>
+    <span class="n">salary</span> <span class="o">=</span> <span class="n">EXCLUDED</span><span class="mf">.</span><span class="n">salary</span>
+<span class="hll"><span class="k">RETURNING</span> <span class="o">*</span><span class="p">,</span> <span class="p">(</span><span class="n">xmax</span> <span class="o">=</span> <span class="mf">0</span><span class="p">)</span> <span class="k">AS</span> <span class="n">inserted</span><span class="p">;</span>
+</span>
+<span class="go">  name  │ department │   role    │ salary │ inserted</span>
+<span class="go">────────┼────────────┼───────────┼────────┼──────────</span>
+<span class="go"> Jane   │ R&amp;D        │ Developer │   1200 │ t</span>
+<span class="go"> George │ Sales      │ Manager   │   1000 │ f</span>
+<span class="go">INSERT 0 2</span>
+</pre></div>
+
+
+<p>Notice the difference in the <code>RETUNING</code> clause. It includes the calculated field <code>inserted</code> that uses the special column <code>xmax</code>
+ to determine how many rows were inserted. From the data returned by the
+ command, you can spot that a new row was inserted for "Jane", but 
+"George" was already in the table, so the row was updated.</p>
+<p>The <code>xmax</code> column is a <a href="https://www.postgresql.org/docs/current/ddl-system-columns.html" rel="noopener">special system column</a>:</p>
+<blockquote>
+<p>The identity (transaction ID) of the deleting transaction, or zero for an undeleted row version.</p>
+</blockquote>
+<p>In PostgreSQL, when a row is updated, the previous version is deleted, and <code>xmax</code> holds the ID of the deleting transaction. When the row is inserted, no previous row is deleted, so <code>xmax</code> is zero. This "trick" is cleverly using this behavior to distinguish between updated and inserted rows.</p>
+<hr>
+<h2 id="grant-permissions-on-specific-columns"><a class="toclink" href="#grant-permissions-on-specific-columns">Grant Permissions on Specific Columns</a></h2>
+<p>Say you have a users table that contain sensitive information such as credentials, passwords or PII:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">users</span> <span class="p">(</span>
+    <span class="n">id</span> <span class="nb">INT</span><span class="p">,</span>
+    <span class="n">username</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mf">20</span><span class="p">),</span>
+    <span class="n">personal_id</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mf">10</span><span class="p">),</span>
+    <span class="n">password_hash</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mf">256</span><span class="p">)</span>
+<span class="p">);</span>
+<span class="go">CREATE TABLE</span>
+
+<span class="gp">db=#</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">users</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mf">1</span><span class="p">,</span> <span class="s1">'haki'</span><span class="p">,</span> <span class="s1">'12222227'</span><span class="p">,</span> <span class="s1">'super-secret-hash'</span><span class="p">);</span>
+<span class="go">INSERT 1 0</span>
+</pre></div>
+
+
+<p>The table is used by different people in your organization, such as 
+analysts, to access data and produce ad-hoc reports. To allow access to 
+analysts, you add a special user in the database:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">CREATE</span> <span class="k">USER</span> <span class="n">analyst</span><span class="p">;</span>
+<span class="go">CREATE USER</span>
+
+<span class="gp">db=#</span> <span class="k">GRANT</span> <span class="k">SELECT</span> <span class="k">ON</span> <span class="n">users</span> <span class="k">TO</span> <span class="n">analyst</span><span class="p">;</span>
+<span class="go">GRANT</span>
+</pre></div>
+
+
+<p>The user <code>analyst</code> can now access the <code>users</code> table:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="kp">\connect</span> <span class="ss">db</span> <span class="ss">analyst</span>
+<span class="go">You are now connected to database "db" as user "analyst".</span>
+
+<span class="gp">db=&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">users</span><span class="p">;</span>
+<span class="go"> id │ username │ personal_id │   password_hash</span>
+<span class="go">────┼──────────┼─────────────┼───────────────────</span>
+<span class="go">  1 │ haki     │ 12222227    │ super-secret-hash</span>
+</pre></div>
+
+
+<p>As mentioned previously, analysts access users data to produce 
+reports and conduct analysis, but they should not have access to 
+sensitive information or PII.</p>
+<p>To provide granular control over which data a user can access in a 
+table, PostgreSQL allows you to grant permissions only on specific 
+columns of a table:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="kp">\connect</span> <span class="ss">db</span> <span class="ss">postgres</span>
+<span class="go">You are now connected to database "db" as user "postgres".</span>
+
+<span class="gp">db=#</span> <span class="k">REVOKE</span> <span class="k">SELECT</span> <span class="k">ON</span> <span class="n">users</span> <span class="k">FROM</span> <span class="n">analyst</span><span class="p">;</span>
+<span class="go">REVOKE</span>
+
+<span class="hll"><span class="gp">db=#</span> <span class="k">GRANT</span> <span class="k">SELECT</span> <span class="p">(</span><span class="n">id</span><span class="p">,</span> <span class="n">username</span><span class="p">)</span> <span class="k">ON</span> <span class="n">users</span> <span class="k">TO</span> <span class="n">analyst</span><span class="p">;</span>
+</span><span class="go">GRANT</span>
+</pre></div>
+
+
+<p>After revoking the existing select permission on the table, you granted <code>analyst</code> select permission only on the <code>id</code> and <code>username</code> columns. Now, <code>analyst</code> can no longer   access these columns:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="kp">\connect</span> <span class="ss">db</span> <span class="ss">analyst</span>
+<span class="go">You are now connected to database "db" as user "analyst".</span>
+
+<span class="gp">db=&gt;</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">users</span><span class="p">;</span>
+<span class="hll"><span class="gs">ERROR:</span><span class="gr">  permission denied for table users</span>
+</span>
+<span class="gp">db=&gt;</span> <span class="k">SELECT</span> <span class="n">id</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">personal_id</span> <span class="k">FROM</span> <span class="n">users</span><span class="p">;</span>
+<span class="hll"><span class="gs">ERROR:</span><span class="gr">  permission denied for table users</span>
+</span>
+<span class="gp">db=&gt;</span> <span class="k">SELECT</span> <span class="n">id</span><span class="p">,</span> <span class="n">username</span> <span class="k">FROM</span> <span class="n">users</span><span class="p">;</span>
+<span class="go"> id │ username</span>
+<span class="go">────┼──────────</span>
+<span class="hll"><span class="go">  1 │ haki</span>
+</span></pre></div>
+
+
+<p>Notice that when the user <code>analyst</code> attempts to access any of the restricted columns, either explicitly or implicitly using <code>*</code>, they get a "permission denied" error.</p>
+<hr>
+<h2 id="match-against-multiple-patterns"><a class="toclink" href="#match-against-multiple-patterns">Match Against Multiple Patterns</a></h2>
+<p>It's not uncommon to use pattern matching in SQL. For example, here is a query to find users with a "gmail.com" email account:</p>
+<div class="highlight"><pre><span></span><span class="k">SELECT</span> <span class="o">*</span>
+<span class="k">FROM</span> <span class="n">users</span>
+<span class="k">WHERE</span> <span class="n">email</span> <span class="k">LIKE</span> <span class="s1">'%@gmail.com'</span><span class="p">;</span>
+</pre></div>
+
+
+<p>This query uses the wildcard '%' to find users with emails that end 
+with "@gmail.com". What if, for example, in the same query you also want
+ to find users with a "yahoo.com" email account?</p>
+<div class="highlight"><pre><span></span><span class="k">SELECT</span> <span class="o">*</span>
+<span class="k">FROM</span> <span class="n">users</span>
+<span class="k">WHERE</span>
+    <span class="n">email</span> <span class="k">LIKE</span> <span class="s1">'%@gmail.com'</span>
+    <span class="k">OR</span> <span class="n">email</span> <span class="k">LIKE</span> <span class="s1">'%@yahoo.com'</span>
+</pre></div>
+
+
+<p>To match against either one of these patterns, you can construct an <code>OR</code> condition. In PostgreSQL however, there is another way to match against multiple patterns:</p>
+<div class="highlight"><pre><span></span><span class="k">SELECT</span> <span class="o">*</span>
+<span class="k">FROM</span> <span class="n">users</span>
+<span class="hll"><span class="k">WHERE</span> <span class="n">email</span> <span class="k">SIMILAR</span> <span class="k">TO</span> <span class="s1">'%@gmail.com|%@yahoo.com'</span>
+</span></pre></div>
+
+
+<p>Using <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP" rel="noopener"><code>SIMILAR TO</code></a> you can match against multiple patterns and keep the query simple.</p>
+<p>Another way to match against multiple patterns is using regexp:</p>
+<div class="highlight"><pre><span></span><span class="k">SELECT</span> <span class="o">*</span>
+<span class="k">FROM</span> <span class="n">users</span>
+<span class="hll"><span class="k">WHERE</span> <span class="n">email</span> <span class="o">~</span> <span class="s1">'@gmail\.com$|@yahoo\.com$'</span>
+</span></pre></div>
+
+
+<p>When using regexp you need to take be a bit more cautious. A period "<code>.</code>" will match anything, so to match the period "<code>.</code>" in <code>gmail.com</code> or <code>yahoo.com</code>, you need to add the escape character "<code>\.</code>".</p>
+<p>When I posted this <a href="https://twitter.com/be_haki/status/1435859174538293248?s=20" rel="noopener">on twitter</a> I got some interesting responses. <a href="https://twitter.com/psycopg/status/1435926642388516866?s=20" rel="noopener">One comment</a> from the official account of <a href="https://www.psycopg.org/" rel="noopener">psycopg</a>, a PostgreSQL driver for Python, suggested another way:</p>
+<div class="highlight"><pre><span></span><span class="k">SELECT</span> <span class="o">*</span>
+<span class="k">FROM</span> <span class="n">users</span>
+<span class="hll"><span class="k">WHERE</span> <span class="n">email</span> <span class="o">~</span> <span class="k">ANY</span><span class="p">(</span><span class="nb">ARRAY</span><span class="p">[</span><span class="s1">'@gmail\.com$'</span><span class="p">,</span> <span class="s1">'@yahoo\.com$'</span><span class="p">])</span>
+</span></pre></div>
+
+
+<p>This query uses the <code>ANY</code> operator to match against an 
+array of patterns. If an email matches any of the patterns, the 
+condition will be true. This approach is easier to work with from a host
+ language such as Python:</p>
+<div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">'''</span>
+<span class="s1">        SELECT *</span>
+<span class="s1">        FROM users</span>
+<span class="hll"><span class="s1">        WHERE email ~ ANY(ARRAY</span><span class="si">%(patterns)s</span><span class="s1">)</span>
+</span><span class="s1">    '''</span> <span class="o">%</span> <span class="p">{</span>
+        <span class="s1">'patterns'</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s1">'@gmail\.com$'</span><span class="p">,</span>
+            <span class="s1">'@yahoo\.com$'</span><span class="p">,</span>
+        <span class="p">],</span>
+    <span class="p">})</span>
+</pre></div>
+
+
+<p>Unlike the previous approach that used <code>SIMILAR TO</code>, using <code>ANY</code> you can bind a list of patterns to the variable.</p>
+<hr>
+<h2 id="find-the-current-value-of-a-sequence-without-advancing-it"><a class="toclink" href="#find-the-current-value-of-a-sequence-without-advancing-it">Find the Current Value of a Sequence Without Advancing It</a></h2>
+<p>If you ever needed to find the current value of a sequence, your first attempt was most likely using <a href="https://www.postgresql.org/docs/current/functions-sequence.html" rel="noopener"><code>currval</code></a>:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">SELECT</span> <span class="n">currval</span><span class="p">(</span><span class="s1">'sale_id_seq'</span><span class="p">);</span>
+<span class="gs">ERROR:</span><span class="gr">  currval of sequence "sale_id_seq" is not yet defined in this session</span>
+</pre></div>
+
+
+<p>Just like me, you probably found that <code>currval</code> only works
+ if the sequence was defined or used in the current session. Advancing a
+ sequence for no good reason is usually not something you want to do, so
+ this is not an acceptable solution.</p>
+<p>In PostgreSQL 10 the view <a href="https://www.postgresql.org/docs/current/view-pg-sequences.html" rel="noopener"><code>pg_sequences</code></a> was added to provide easy access to information about sequences:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">pg_sequences</span> <span class="k">WHERE</span> <span class="n">sequencename</span> <span class="o">=</span> <span class="s1">'sale_id_seq'</span><span class="p">;</span>
+<span class="go">─[ RECORD 1 ]─┬────────────</span>
+<span class="go">schemaname    │ public</span>
+<span class="go">sequencename  │ sale_id_seq</span>
+<span class="go">sequenceowner │ db</span>
+<span class="go">data_type     │ integer</span>
+<span class="go">start_value   │ 1</span>
+<span class="go">min_value     │ 1</span>
+<span class="go">max_value     │ 2147483647</span>
+<span class="go">increment_by  │ 1</span>
+<span class="go">cycle         │ f</span>
+<span class="go">cache_size    │ 1</span>
+<span class="hll"><span class="go">last_value    │ 155</span>
+</span></pre></div>
+
+
+<p>This table can answer your question, but it's not really a "lesser 
+known feature", it's just another table in the information schema.</p>
+<p>Another way to get the current value of a sequence is using the undocumented function <code>pg_sequence_last_value</code>:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">SELECT</span> <span class="n">pg_sequence_last_value</span><span class="p">(</span><span class="s1">'sale_id_seq'</span><span class="p">);</span>
+<span class="go"> pg_sequence_last_value</span>
+<span class="go">────────────────────────</span>
+<span class="go">                   155</span>
+</pre></div>
+
+
+<p>It's not clear why this function is not documented, but I couldn't find any mention of it in the <a href="https://www.postgresql.org/search/?u=%2Fdocs%2F14%2F&amp;q=pg_sequence_last_value" rel="noopener">official documentation</a>. Take that under consideration if you decide to use it.</p>
+<p>Another interesting thing I found while I was researching this, is that you can query a sequence, just like you would a table:</p>
+<div class="highlight"><pre><span></span><span class="hll"><span class="gp">db=#</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">sale_id_seq</span><span class="p">;</span>
+</span>
+<span class="go"> last_value │ log_cnt │ is_called</span>
+<span class="go">────────────┼─────────┼───────────</span>
+<span class="go">        155 │      10 │ t</span>
+</pre></div>
+
+
+<p>This really makes you wonder what other types of objects you can query in PostgreSQL, and what you'll get in return.</p>
+<p>It's important to note that this feature should not be used for 
+anything except getting a cursory look at a sequence. You should not try
+ to update ID's based on values from this output, for that you should 
+use <code>nextval</code>.</p>
+<hr>
+<h2 id="use-copy-with-multi-line-sql"><a class="toclink" href="#use-copy-with-multi-line-sql">Use <code>\copy</code> With Multi-line SQL</a></h2>
+<p>If you work with psql a lot you probably use <code>\COPY</code> very often to export data from the database. I know I do. One of the most annoying things about <code>\COPY</code> is that it does not allow multi-line queries:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="kp">\COPY</span> <span class="ss">(</span>
+<span class="go">\copy: parse error at end of line</span>
+</pre></div>
+
+
+<p>When you try to add a new line to a <code>\copy</code> command you get this error message.</p>
+<p>To overcome this restriction, my first idea was to use a view:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">CREATE</span> <span class="k">VIEW</span> <span class="n">v_department_dbas</span> <span class="k">AS</span>
+    <span class="k">SELECT</span> <span class="n">department</span><span class="p">,</span> <span class="n">count</span><span class="p">(</span><span class="o">*</span><span class="p">)</span> <span class="k">AS</span> <span class="n">employees</span>
+    <span class="k">FROM</span> <span class="n">emp</span>
+    <span class="k">WHERE</span> <span class="k">role</span> <span class="o">=</span> <span class="s1">'dba'</span>
+    <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">department</span>
+    <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">employees</span><span class="p">;</span>
+<span class="go">CREATE VIEW</span>
+
+<span class="hll"><span class="gp">db=#</span> <span class="kp">\COPY</span> <span class="ss">(SELECT</span> <span class="ss">*</span> <span class="ss">FROM</span> <span class="ss">v_department_dbas)</span> <span class="ss">TO</span> <span class="ss">department_dbas.csv</span> <span class="ss">WITH</span> <span class="ss">CSV</span> <span class="ss">HEADER;</span>
+</span><span class="go">COPY 5</span>
+
+<span class="gp">db=#</span> <span class="k">DROP</span> <span class="k">VIEW</span> <span class="n">v_department_dbas</span><span class="p">;</span>
+<span class="go">DROP VIEW;</span>
+</pre></div>
+
+
+<p>This works, but if something fails in the middle it can leave views 
+laying around. I like to keep my schema tidy, so I looked for a way to 
+automatically cleanup after me. A quick search brought up <a href="https://www.postgresql.org/docs/current/sql-createview.html#id-1.9.3.97.6" rel="noopener">temporary views</a>:</p>
+<div class="highlight"><pre><span></span><span class="hll"><span class="gp">db=#</span> <span class="k">CREATE</span> <span class="k">TEMPORARY</span> <span class="k">VIEW</span> <span class="n">v_department_dbas</span> <span class="k">AS</span> <span class="o">#</span> <span class="mf">...</span>
+</span><span class="k">CREATE</span> <span class="k">VIEW</span>
+
+<span class="gp">db=#</span> <span class="kp">\COPY</span> <span class="ss">(SELECT</span> <span class="ss">*</span> <span class="ss">FROM</span> <span class="ss">v_department_dbas)</span> <span class="ss">TO</span> <span class="ss">department_dbas.csv</span> <span class="ss">WITH</span> <span class="ss">CSV</span> <span class="ss">HEADER;</span>
+<span class="go">COPY 5</span>
+</pre></div>
+
+
+<p>Using temporary views I no longer had to cleanup after myself, 
+because temporary views are automatically dropped when the session 
+terminates.</p>
+<p>I used temporary views for a while, until I struck this little gem in the <a href="https://www.postgresql.org/docs/current/app-psql.html#APP-PSQL-META-COMMANDS-COPY" rel="noopener">psql documentation</a>:</p>
+<div class="highlight"><pre><span></span><span class="hll"><span class="gp">db=#</span> <span class="k">COPY</span> <span class="p">(</span>
+</span>    <span class="k">SELECT</span> <span class="n">department</span><span class="p">,</span> <span class="n">count</span><span class="p">(</span><span class="o">*</span><span class="p">)</span> <span class="k">AS</span> <span class="n">employees</span>
+    <span class="k">FROM</span> <span class="n">emp</span>
+    <span class="k">WHERE</span> <span class="k">role</span> <span class="o">=</span> <span class="s1">'dba'</span>
+    <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">department</span>
+    <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">employees</span>
+<span class="hll"><span class="p">)</span> <span class="k">TO</span> <span class="k">STDOUT</span> <span class="k">WITH</span> <span class="k">CSV</span> <span class="k">HEADER</span> <span class="kp">\g</span> <span class="ss">department_dbas.csv</span>
+</span><span class="k">COPY</span> <span class="mf">5</span>
+</pre></div>
+
+
+<p>Nice, right? Let's break it down:</p>
+<ul>
+<li>
+<p><strong>Use <code>COPY</code> instead of <code>\COPY</code></strong>: the <code>COPY</code> command is a server command executed <em>in the server</em>, and <code>\COPY</code> is a psql command with the same interface. So while <code>\COPY</code> does not support multi-line queries, <code>COPY</code> does!</p>
+</li>
+<li>
+<p><strong>Write results to STDOUT</strong>: Using <code>COPY</code> we can write results to a directory on the server, or write results to the standard output, using <code>TO STDOUT</code>.</p>
+</li>
+<li>
+<p><strong>Use <code>\g</code> to write STDOUT to local file</strong>: Finally, psql provides a command to write the output from standard output to a file.</p>
+</li>
+</ul>
+<p>Combining these three features did exactly what I wanted.</p>
+<div class="admonition tip">
+<p class="admonition-title">Copy expert</p>
+<p>If you move a lot of data around, don't miss the <a href="https://hakibenita.com/fast-load-data-python-postgresql">fastest way to load data into PostgreSQL using Python</a>.</p>
+</div>
+<hr>
+<h2 id="prevent-setting-the-value-of-an-auto-generated-key"><a class="toclink" href="#prevent-setting-the-value-of-an-auto-generated-key">Prevent Setting the Value of an Auto Generated Key</a></h2>
+<p>If you are using auto generated primary keys in PostgreSQL, it's possible you are still using the <a href="https://www.postgresql.org/docs/current/datatype-numeric.html#DATATYPE-SERIAL" rel="noopener"><code>SERIAL</code> datatype</a>:</p>
+<div class="highlight"><pre><span></span><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">sale</span> <span class="p">(</span>
+<span class="hll">    <span class="n">id</span> <span class="nb">SERIAL</span> <span class="k">PRIMARY</span> <span class="k">KEY</span><span class="p">,</span>
+</span>    <span class="n">sold_at</span> <span class="n">TIMESTAMPTZ</span><span class="p">,</span>
+    <span class="n">amount</span> <span class="nb">INT</span>
+<span class="p">);</span>
+</pre></div>
+
+
+<p>Behind the scenes, PostgreSQL creates a sequence to use when rows are added:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">sale</span> <span class="p">(</span><span class="n">sold_at</span><span class="p">,</span> <span class="n">amount</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="n">now</span><span class="p">(),</span> <span class="mf">1000</span><span class="p">);</span>
+<span class="go">INSERT 0 1</span>
+
+<span class="gp">db=#</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">sale</span><span class="p">;</span>
+<span class="go"> id │           sold_at             │ amount</span>
+<span class="go">────┼───────────────────────────────┼────────</span>
+<span class="go">  1 │ 2021-09-25 10:06:56.646298+03 │   1000</span>
+</pre></div>
+
+
+<p>The <code>SERIAL</code> data type is unique to PostgreSQL and <a href="https://www.2ndquadrant.com/en/blog/postgresql-10-identity-columns/" rel="noopener">has some known problems</a>, so starting at version 10, the <code>SERIAL</code> datatype was softly deprecated in favor of <em>identity columns</em>:</p>
+<div class="highlight"><pre><span></span><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">sale</span> <span class="p">(</span>
+<span class="hll">    <span class="n">id</span> <span class="nb">INT</span> <span class="k">GENERATED</span> <span class="k">BY</span> <span class="k">DEFAULT</span> <span class="k">AS</span> <span class="k">IDENTITY</span> <span class="k">PRIMARY</span> <span class="k">KEY</span><span class="p">,</span>
+</span>    <span class="n">sold_at</span> <span class="n">TIMESTAMPTZ</span><span class="p">,</span>
+    <span class="n">amount</span> <span class="nb">INT</span>
+<span class="p">);</span>
+</pre></div>
+
+
+<p>Identity columns work very similar to the <code>SERIAL</code> data type:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">sale</span> <span class="p">(</span><span class="n">sold_at</span><span class="p">,</span> <span class="n">amount</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="n">now</span><span class="p">(),</span> <span class="mf">1000</span><span class="p">);</span>
+<span class="go">INSERT 0 1</span>
+
+<span class="gp">db=#</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">sale</span><span class="p">;</span>
+<span class="go"> id │           sold_at             │ amount</span>
+<span class="go">────┼───────────────────────────────┼────────</span>
+<span class="go">  1 │ 2021-09-25 10:11:57.771121+03 │   1000</span>
+</pre></div>
+
+
+<p>But, consider this scenario:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">sale</span> <span class="p">(</span><span class="n">id</span><span class="p">,</span> <span class="n">sold_at</span><span class="p">,</span> <span class="n">amount</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mf">2</span><span class="p">,</span> <span class="n">now</span><span class="p">(),</span> <span class="mf">1000</span><span class="p">);</span>
+<span class="go">INSERT 0 1</span>
+
+<span class="gp">db=#</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">sale</span> <span class="p">(</span><span class="n">sold_at</span><span class="p">,</span> <span class="n">amount</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="n">now</span><span class="p">(),</span> <span class="mf">1000</span><span class="p">);</span>
+<span class="hll"><span class="gs">ERROR:</span><span class="gr">  duplicate key value violates unique constraint "sale_pkey"</span>
+</span><span class="gs">DETAIL:</span><span class="gr">  Key (id)=(2) already exists.</span>
+</pre></div>
+
+
+<p>Why did it fail?</p>
+<ul>
+<li>The first <code>INSERT</code> command explicitly provides the value 2 of the <code>id</code> column, so the sequence was not used.</li>
+<li>The second <code>INSERT</code> command does not provide a value for <code>id</code>,
+ so the sequence is used. The next value of the sequence happened to be 
+2, so the command failed with a unique constraint violation.</li>
+</ul>
+<p>Auto-incrementing IDs rarely need to be set manually, and doing so 
+can cause a mess. So how can you prevent users from setting them?</p>
+<div class="highlight"><pre><span></span><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">sale</span> <span class="p">(</span>
+<span class="hll">    <span class="n">id</span> <span class="nb">INT</span> <span class="k">GENERATED</span> <span class="n">ALWAYS</span> <span class="k">AS</span> <span class="k">IDENTITY</span> <span class="k">PRIMARY</span> <span class="k">KEY</span><span class="p">,</span>
+</span>    <span class="n">sold_at</span> <span class="n">TIMESTAMPTZ</span><span class="p">,</span>
+    <span class="n">amount</span> <span class="nb">INT</span>
+<span class="p">);</span>
+</pre></div>
+
+
+<p>Instead of using <code>GENERATED BY DEFAULT</code>, use <code>GENERATED ALWAYS</code>. To understand the difference, try the same scenario again:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">sale</span> <span class="p">(</span><span class="n">sold_at</span><span class="p">,</span> <span class="n">amount</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="n">now</span><span class="p">(),</span> <span class="mf">1000</span><span class="p">);</span>
+<span class="go">INSERT 0 1</span>
+
+<span class="gp">db=#</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">sale</span> <span class="p">(</span><span class="n">id</span><span class="p">,</span> <span class="n">sold_at</span><span class="p">,</span> <span class="n">amount</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mf">2</span><span class="p">,</span> <span class="n">now</span><span class="p">(),</span> <span class="mf">1000</span><span class="p">);</span>
+<span class="hll"><span class="gs">ERROR:</span><span class="gr">  cannot insert into column "id"</span>
+</span><span class="hll"><span class="gs">DETAIL:</span><span class="gr">  Column "id" is an identity column defined as GENERATED ALWAYS.</span>
+</span><span class="gs">HINT:</span><span class="gr">  Use OVERRIDING SYSTEM VALUE to override.</span>
+</pre></div>
+
+
+<p>What changed?</p>
+<ul>
+<li>The first <code>INSERT</code> does not provide a value for <code>id</code> and completes successfully.</li>
+<li>The second <code>INSERT</code> command however, attempts to set the value 2 for <code>id</code> and fails!</li>
+</ul>
+<p>In the error message, PostgreSQL is kind enough to offer a solution for when you actually <em>do</em> want to set the value for an identity column explicitly:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">sale</span> <span class="p">(</span><span class="n">id</span><span class="p">,</span> <span class="n">sold_at</span><span class="p">,</span> <span class="n">amount</span><span class="p">)</span>
+<span class="hll"><span class="n">OVERRIDING</span> <span class="k">SYSTEM</span> <span class="k">VALUE</span> <span class="k">VALUES</span> <span class="p">(</span><span class="mf">2</span><span class="p">,</span> <span class="n">now</span><span class="p">(),</span> <span class="mf">1000</span><span class="p">);</span>
+</span>
+<span class="go">INSERT 0 1</span>
+</pre></div>
+
+
+<p>By adding the <code>OVERRIDING SYSTEM VALUE</code> to the <code>INSERT</code>
+ command you explicitly instruct PostgreSQL to allow you to set the 
+value of an identity column. You still have to handle a possible unique 
+constraint violation, but you can no longer blame PostgreSQL for it!</p>
+<hr>
+<h2 id="two-more-ways-to-produce-a-pivot-table"><a class="toclink" href="#two-more-ways-to-produce-a-pivot-table">Two More Ways to Produce a Pivot Table</a></h2>
+<p>In one of my previous articles I demonstrated <a href="https://hakibenita.com/sql-for-data-analysis#pivot-tables">how to produce pivot tables using conditional aggregates</a>. After writing the article, I found two more ways to generate pivot tables in PostgreSQL.</p>
+<p>Say you want to get the number of employees, at each role, in each department:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">WITH</span> <span class="n">employees</span> <span class="k">AS</span> <span class="p">(</span>
+    <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="p">(</span><span class="k">VALUES</span>
+        <span class="p">(</span><span class="s1">'Haki'</span><span class="p">,</span>    <span class="s1">'R&amp;D'</span><span class="p">,</span>      <span class="s1">'Manager'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'Dan'</span><span class="p">,</span>     <span class="s1">'R&amp;D'</span><span class="p">,</span>      <span class="s1">'Developer'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'Jax'</span><span class="p">,</span>     <span class="s1">'R&amp;D'</span><span class="p">,</span>      <span class="s1">'Developer'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'George'</span><span class="p">,</span>  <span class="s1">'Sales'</span><span class="p">,</span>    <span class="s1">'Manager'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'Bill'</span><span class="p">,</span>    <span class="s1">'Sales'</span><span class="p">,</span>    <span class="s1">'Developer'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'David'</span><span class="p">,</span>   <span class="s1">'Sales'</span><span class="p">,</span>    <span class="s1">'Developer'</span><span class="p">)</span>
+    <span class="p">)</span> <span class="k">AS</span> <span class="n">t</span><span class="p">(</span>
+        <span class="k">name</span><span class="p">,</span>       <span class="n">department</span><span class="p">,</span>  <span class="k">role</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="k">SELECT</span> <span class="k">role</span><span class="p">,</span> <span class="n">department</span><span class="p">,</span> <span class="n">count</span><span class="p">(</span><span class="o">*</span><span class="p">)</span>
+<span class="k">FROM</span> <span class="n">employees</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="k">role</span><span class="p">,</span> <span class="n">department</span><span class="p">;</span>
+
+<span class="go">   role    │ department │ count</span>
+<span class="go">───────────┼────────────┼───────</span>
+<span class="go"> Developer │ Sales      │     2</span>
+<span class="go"> Manager   │ Sales      │     1</span>
+<span class="go"> Manager   │ R&amp;D        │     1</span>
+<span class="go"> Developer │ R&amp;D        │     2</span>
+</pre></div>
+
+
+<p>A better way of viewing this would be as a pivot table. In psql you can use the <code>\crosstabview</code> command to transform the results of the last query to a pivot table:</p>
+<div class="highlight"><pre><span></span><span class="hll"><span class="gp">db=#</span> <span class="kp">\crosstabview</span>
+</span>
+<span class="go">   role    │ Sales │ R&amp;D</span>
+<span class="go">───────────┼───────┼─────</span>
+<span class="go"> Developer │     2 │   2</span>
+<span class="go"> Manager   │     1 │   1</span>
+</pre></div>
+
+
+<p>Magic!</p>
+<p>By default, the command will produce the pivot table from the first two columns, but you can control that with arguments:</p>
+<div class="highlight"><pre><span></span><span class="hll"><span class="gp">db=#</span> <span class="kp">\crosstabview</span> <span class="ss">department</span> <span class="ss">role</span>
+</span>
+<span class="go"> department │ Developer │ Manager</span>
+<span class="go">────────────┼───────────┼─────────</span>
+<span class="go"> Sales      │         2 │       1</span>
+<span class="go"> R&amp;D        │         2 │       1</span>
+</pre></div>
+
+
+<p>Another, slightly less magical way to produce a pivot table is using the built-in <a href="https://www.postgresql.org/docs/current/tablefunc.html" rel="noopener"><code>tablefunc</code> extension</a>:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">CREATE</span> <span class="k">EXTENSION</span> <span class="n">tablefunc</span><span class="p">;</span>
+<span class="go">CREATE EXTENSION</span>
+
+<span class="hll"><span class="gp">db=#</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">crosstab</span><span class="p">(</span><span class="s1">'</span>
+</span><span class="s1">    SELECT role, department, count(*) AS employees</span>
+<span class="s1">    FROM employees</span>
+<span class="s1">    GROUP BY 1, 2</span>
+<span class="s1">    ORDER BY role</span>
+<span class="s1">'</span><span class="p">,</span> <span class="s1">'</span>
+<span class="s1">    SELECT DISTINCT department</span>
+<span class="s1">    FROM employees</span>
+<span class="s1">    ORDER BY 1</span>
+<span class="s1">'</span><span class="p">)</span> <span class="k">AS</span> <span class="n">t</span><span class="p">(</span><span class="k">role</span> <span class="nb">text</span><span class="p">,</span> <span class="n">sales</span> <span class="nb">int</span><span class="p">,</span> <span class="n">rnd</span> <span class="nb">int</span><span class="p">);</span>
+
+<span class="go">   role    │ sales │ rnd</span>
+<span class="go">───────────┼───────┼─────</span>
+<span class="go"> Developer │     2 │   2</span>
+<span class="go"> Manager   │     1 │   1</span>
+</pre></div>
+
+
+<p>Using the function <a href="https://www.postgresql.org/docs/current/tablefunc.html#id-1.11.7.47.5.5" rel="noopener"><code>crosstab</code></a>
+ you can produce a pivot table. The downside of this method is that you 
+need to define the output columns in advance. The advantage however, is 
+that the <code>crosstab</code> function produces a table, which you can use as a sub-query for further processing.</p>
+<hr>
+<h2 id="dollar-quoting"><a class="toclink" href="#dollar-quoting">Dollar Quoting</a></h2>
+<p>If you store text fields in your database, especially entire 
+paragraphs, you are probably familiar with escape characters. For 
+example, to include a single quote <code>'</code> in a text literal you need to escape it using another single quote <code>''</code>:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">SELECT</span> <span class="s1">'John''s Pizza'</span><span class="p">;</span>
+<span class="go">   ?column?</span>
+<span class="go">──────────────</span>
+<span class="go"> John's Pizza</span>
+</pre></div>
+
+
+<p>When text starts to get bigger, and include characters like 
+backslashes and new lines, it can get pretty annoying to add escape 
+characters. To address this, PostgreSQL provides another way to write 
+string constants:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">SELECT</span> <span class="s">$$a long</span>
+<span class="s">string with new lines</span>
+<span class="s">and 'single quotes'</span>
+<span class="s">and "double quotes</span>
+
+<span class="s">PostgreSQL doesn't mind ;)$$</span> <span class="k">AS</span> <span class="nb">text</span><span class="p">;</span>
+<span class="go">           text</span>
+<span class="go">───────────────────────────</span>
+<span class="go"> a long                   ↵</span>
+<span class="go"> string with new lines    ↵</span>
+<span class="go"> and 'single quotes'      ↵</span>
+<span class="go"> and "double quotes       ↵</span>
+<span class="go">                          ↵</span>
+<span class="go"> PostgreSQL doesn't mind ;)</span>
+</pre></div>
+
+
+<p>Notice the dollar signs <code>$$</code> at the beginning and end of the string. Anything in between <code>$$</code> is treated as a string. PostgreSQL calls this <a href="https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING" rel="noopener">"Dollar Quoting"</a>.</p>
+<p>But there is more, if you happen to need to use the sign <code>$$</code> in the text, you can add a tag, which makes this even more useful. For example:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">SELECT</span> <span class="s">$</span><span class="dl">JSON</span><span class="s">${</span>
+<span class="s">    "name": "John's Pizza",</span>
+<span class="s">    "tagline": "Best value for your $$"</span>
+<span class="s">}$</span><span class="dl">JSON</span><span class="s">$</span> <span class="k">AS</span> <span class="nb">json</span><span class="p">;</span>
+
+<span class="go">                  json</span>
+<span class="go">─────────────────────────────────────────</span>
+<span class="go"> {                                      ↵</span>
+<span class="go">     "name": "John's Pizza",            ↵</span>
+<span class="go">     "tagline": "Best value for your $$"↵</span>
+<span class="go"> }</span>
+</pre></div>
+
+
+<p>Notice that we choose to tag this block with <code>$JSON$</code>, so the sign "$$" was included as a whole in the output.</p>
+<p>You can also use this to quickly generate jsonb objects that include special characters:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">SELECT</span> <span class="s">$</span><span class="dl">JSON</span><span class="s">${</span>
+<span class="s">    "name": "John's Pizza",</span>
+<span class="s">    "tagline": "Best value for your $$"</span>
+<span class="hll"><span class="s">}$</span><span class="dl">JSON</span><span class="s">$</span><span class="o">::</span><span class="nb">jsonb</span> <span class="k">AS</span> <span class="nb">json</span><span class="p">;</span>
+</span><span class="go">                          json</span>
+<span class="go">─────────────────────────────────────────────────────────────</span>
+<span class="go"> {"name": "John's Pizza", "tagline": "Best value for your $$"}</span>
+</pre></div>
+
+
+<p>The value is now a jsonb object which you can manipulate as you wish!</p>
+<hr>
+<h2 id="comment-on-database-objects"><a class="toclink" href="#comment-on-database-objects">Comment on Database Objects</a></h2>
+<p>PostgreSQL has this nice little feature where you can <a href="https://www.postgresql.org/docs/current/sql-comment.html" rel="noopener">add a comments on just about every database object</a>. For example, adding a comment on a table:</p>
+<div class="highlight"><pre><span></span><span class="n">db</span><span class="o">=#</span> <span class="k">COMMENT</span> <span class="k">ON</span> <span class="k">TABLE</span> <span class="n">sale</span> <span class="k">IS</span> <span class="s1">'Sales made in the system'</span><span class="p">;</span>
+<span class="k">COMMENT</span>
+</pre></div>
+
+
+<p>You can now view this comment in psql (and probably other IDEs):</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="kp">\dt+</span> <span class="ss">sale</span>
+<span class="go">                                  List of relations</span>
+<span class="go"> Schema │ Name │ Type  │ Owner │ Persistence │    Size    │       Description</span>
+<span class="go">────────┼──────┼───────┼───────┼─────────────┼────────────┼──────────────────────────</span>
+<span class="go"> public │ sale │ table │ haki  │ permanent   │ 8192 bytes │ Sales made in the system</span>
+</pre></div>
+
+
+<p>You can also add comments on table columns, and view them when using extended describe:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">COMMENT</span> <span class="k">ON</span> <span class="k">COLUMN</span> <span class="n">sale</span><span class="mf">.</span><span class="n">sold_at</span> <span class="k">IS</span> <span class="s1">'When was the sale finalized'</span><span class="p">;</span>
+<span class="go">COMMENT</span>
+
+<span class="gp">db=#</span> <span class="kp">\d+</span> <span class="ss">sale</span>
+<span class="go">  Column  │           Type           │         Description</span>
+<span class="go">──────────┼──────────────────────────┼─────────────────────────────</span>
+<span class="go"> id       │ integer                  │</span>
+<span class="hll"><span class="go"> sold_at │ timestamp with time zone │ When was the sale finalized</span>
+</span><span class="go"> amount   │ integer                  │</span>
+</pre></div>
+
+
+<p>You can also combine the <code>COMMENT</code> command with dollar quoting to include longer and more meaningful descriptions of, for example, functions:</p>
+<div class="highlight"><pre><span></span><span class="k">COMMENT</span> <span class="k">ON</span> <span class="k">FUNCTION</span> <span class="n">generate_random_string</span> <span class="k">IS</span> <span class="err">$</span><span class="n">docstring</span><span class="err">$</span>
+<span class="n">Generate</span> <span class="n">a</span> <span class="n">random</span> <span class="n">string</span> <span class="k">at</span> <span class="n">a</span> <span class="n">given</span> <span class="n">length</span> <span class="k">from</span> <span class="n">a</span> <span class="n">list</span> <span class="k">of</span> <span class="n">possible</span> <span class="n">characters</span><span class="mf">.</span>
+
+<span class="n">Parameters</span><span class="p">:</span>
+
+    <span class="o">-</span> <span class="n">length</span> <span class="p">(</span><span class="nb">int</span><span class="p">):</span> <span class="n">length</span> <span class="k">of</span> <span class="n">the</span> <span class="n">output</span> <span class="n">string</span>
+    <span class="o">-</span> <span class="n">characters</span> <span class="p">(</span><span class="nb">text</span><span class="p">):</span> <span class="n">possible</span> <span class="n">characters</span> <span class="k">to</span> <span class="n">choose</span> <span class="k">from</span>
+
+<span class="n">Example</span><span class="p">:</span>
+
+    <span class="n">db</span><span class="o">=#</span> <span class="k">SELECT</span> <span class="n">generate_random_string</span><span class="p">(</span><span class="mf">10</span><span class="p">);</span>
+<span class="go">     generate_random_string</span>
+<span class="go">    ────────────────────────</span>
+<span class="go">     o0QsrMYRvp</span>
+
+<span class="go">    db=# SELECT generate_random_string(3, 'AB');</span>
+<span class="go">     generate_random_string</span>
+<span class="go">    ────────────────────────</span>
+<span class="go">     ABB</span>
+<span class="go">$docstring$;</span>
+</pre></div>
+
+
+<p>This is a function I used in the past to demonstrate the <a href="https://hakibenita.com/sql-medium-text-performance#toast-compression">performance impact of medium sized texts on performance</a>.
+ Now I no longer have to go back to the article to remember how to use 
+the function, I have the docstring right there in the comments:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="kp">\df+</span> <span class="ss">generate_random_string</span>
+<span class="go">List of functions</span>
+<span class="go">────────────┬────────────────────────────────────────────────────────────────────────────────</span>
+<span class="go">Schema      │ public</span>
+<span class="go">Name        │ generate_random_string</span>
+<span class="go">/* ... */</span>
+<span class="go">Description │ Generate a random string at a given length from a list of possible characters.↵</span>
+<span class="go">            │                                                                               ↵</span>
+<span class="go">            │ Parameters:                                                                   ↵</span>
+<span class="go">            │                                                                               ↵</span>
+<span class="go">            │     - length (int): length of the output string                               ↵</span>
+<span class="go">            │     - characters (text): possible characters to choose from                   ↵</span>
+<span class="go">            │                                                                               ↵</span>
+<span class="go">            │ Example:                                                                      ↵</span>
+<span class="go">            │                                                                               ↵</span>
+<span class="go">            │     db=# SELECT generate_random_string(10);                                   ↵</span>
+<span class="go">            │      generate_random_string                                                   ↵</span>
+<span class="go">            │     ────────────────────────                                                  ↵</span>
+<span class="go">            │      o0QsrMYRvp                                                               ↵</span>
+<span class="go">            │                                                                               ↵</span>
+<span class="go">            │     db=# SELECT generate_random_string(3, 'AB');                              ↵</span>
+<span class="go">            │      generate_random_string                                                   ↵</span>
+<span class="go">            │     ────────────────────────                                                  ↵</span>
+<span class="go">            │      ABB                                                                      ↵</span>
+<span class="go">            │</span>
+</pre></div>
+
+
+<hr>
+<h2 id="keep-a-separate-history-file-per-database"><a class="toclink" href="#keep-a-separate-history-file-per-database">Keep a Separate History File Per Database</a></h2>
+<p>If you are working with CLI tools you probably use the ability to 
+search past commands very often. In bash and psql, a reverse search is 
+usually available by hitting <kbd>CTRL + R</kbd>.</p>
+<p>If in addition to working with the terminal, you also work with 
+multiple databases, you might find it useful to keep a separate history 
+file per database:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="kp">\set</span> <span class="ss">HISTFILE</span> <span class="ss">~/.psql_history-</span> <span class="nv">:DBNAME</span>
+</pre></div>
+
+
+<p>This way, you are more likely to find a relevant match for the 
+database you are currently connected to. You can drop this in your <a href="https://www.postgresql.org/docs/current/app-psql.html#id-1.9.4.20.10" rel="noopener"><code>~/.psqlrc</code> file</a> to make it persistent.</p>
+<hr>
+<h2 id="autocomplete-reserved-words-in-uppercase"><a class="toclink" href="#autocomplete-reserved-words-in-uppercase">Autocomplete Reserved Words in Uppercase</a></h2>
+<p>There is always a lot of debate (and jokes!) on whether keywords in 
+SQL should be in lower or upper case. I think my opinion on this subject
+ is pretty clear.</p>
+<p>If like me, you like using uppercase keywords in SQL, there is an option in psql to autocomplete keywords in uppercase:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="n">selec</span> <span class="o">&lt;</span><span class="n">tab</span><span class="o">&gt;</span>
+<span class="gp">db=#</span> <span class="k">select</span>
+
+<span class="hll"><span class="gp">db=#</span> <span class="kp">\set</span> <span class="ss">COMP_KEYWORD_CASE</span> <span class="ss">upper</span>
+</span><span class="gp">db=#</span> <span class="n">selec</span> <span class="o">&lt;</span><span class="n">tab</span><span class="o">&gt;</span>
+<span class="gp">db=#</span> <span class="k">SELECT</span>
+</pre></div>
+
+
+<p>After setting <code>COMP_KEYWORD_CASE</code> to upper, when you hit <kbd>TAB</kbd> for autocomplete, keywords will be autocompleted in uppercase.</p>
+<hr>
+<h2 id="sleep-for-interval"><a class="toclink" href="#sleep-for-interval">Sleep for Interval</a></h2>
+<p>Delaying the execution of a program can be pretty useful for things 
+like testing or throttling. To delay the execution of a program in 
+PostgreSQL, the go-to function is usually <code>pg_sleep</code>:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="kp">\timing</span>
+<span class="go">Timing is on.</span>
+
+<span class="hll"><span class="gp">db=#</span> <span class="k">SELECT</span> <span class="n">pg_sleep</span><span class="p">(</span><span class="mf">3</span><span class="p">);</span>
+</span><span class="go"> pg_sleep</span>
+<span class="go">──────────</span>
+
+<span class="go">(1 row)</span>
+
+<span class="hll"><span class="go">Time: 3014.913 ms (00:03.015)</span>
+</span></pre></div>
+
+
+<p>The function sleeps for the given number of seconds. However, when 
+you need to sleep for longer than just a few seconds, calculating the 
+number of seconds can be annoying, for example:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">SELECT</span> <span class="n">pg_sleep</span><span class="p">(</span><span class="mf">255</span><span class="p">);</span>
+</pre></div>
+
+
+<p>How long will this function sleep for? Don't take out the calculator, the function will sleep for 4 minutes and 15 seconds.</p>
+<p>To make it more convenient to sleep for longer periods of time, PostgreSQL offers another function:</p>
+<div class="highlight"><pre><span></span><span class="hll"><span class="gp">db=#</span> <span class="k">SELECT</span> <span class="n">pg_sleep_for</span><span class="p">(</span><span class="s1">'4 minutes 15 seconds'</span><span class="p">);</span>
+</span></pre></div>
+
+
+<p>Unlike its sibling <code>pg_sleep</code>, the function <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-DELAY" rel="noopener"><code>pg_sleep_for</code></a> accepts an interval, which is much more natural to read and understand than the number of seconds.</p>
+<hr>
+<h2 id="get-the-first-or-last-row-in-a-group-without-sub-queries"><a class="toclink" href="#get-the-first-or-last-row-in-a-group-without-sub-queries">Get the First or Last Row in a Group Without Sub-Queries</a></h2>
+<p>When I initially compiled this list I did not think about this feature as a lesser known one, mostly because I use it <em>all the time</em>.
+ But to my surprise, I keep running into weird solutions to this 
+problem, that can be easily solved with what I'm about to show you, so I
+ figured it deserves a place on the list!</p>
+<p>Say you have the this table of students:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">students</span><span class="p">;</span>
+
+<span class="go">  name  │ class │ height</span>
+<span class="go">────────┼───────┼────────</span>
+<span class="go"> Haki   │ A     │    186</span>
+<span class="go"> Dan    │ A     │    175</span>
+<span class="go"> Jax    │ A     │    182</span>
+<span class="go"> George │ B     │    178</span>
+<span class="go"> Bill   │ B     │    167</span>
+<span class="go"> David  │ B     │    178</span>
+</pre></div>
+
+
+<p></p><details><p></p>
+<p></p><summary>⚙ Table data</summary><p></p>
+<p>You can use the following CTE to reproduce queries in this section</p>
+<div class="highlight"><pre><span></span><span class="k">WITH</span> <span class="n">students</span> <span class="k">AS</span> <span class="p">(</span>
+    <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="p">(</span><span class="k">VALUES</span>
+        <span class="p">(</span><span class="s1">'Haki'</span><span class="p">,</span>    <span class="s1">'A'</span><span class="p">,</span>    <span class="mf">186</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'Dan'</span><span class="p">,</span>     <span class="s1">'A'</span><span class="p">,</span>    <span class="mf">175</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'Jax'</span><span class="p">,</span>     <span class="s1">'A'</span><span class="p">,</span>    <span class="mf">182</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'George'</span><span class="p">,</span>  <span class="s1">'B'</span><span class="p">,</span>    <span class="mf">178</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'Bill'</span><span class="p">,</span>    <span class="s1">'B'</span><span class="p">,</span>    <span class="mf">167</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'David'</span><span class="p">,</span>   <span class="s1">'B'</span><span class="p">,</span>    <span class="mf">178</span><span class="p">)</span>
+    <span class="p">)</span> <span class="k">AS</span> <span class="n">t</span><span class="p">(</span>
+        <span class="k">name</span><span class="p">,</span>       <span class="k">class</span><span class="p">,</span>  <span class="n">height</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">students</span><span class="p">;</span>
+</pre></div>
+
+
+<p></p></details><p></p>
+<p><strong>How would you get the entire row of the tallest student in each class?</strong></p>
+<p>On first thought you might try something like this:</p>
+<div class="highlight"><pre><span></span><span class="k">SELECT</span> <span class="k">class</span><span class="p">,</span> <span class="n">max</span><span class="p">(</span><span class="n">height</span><span class="p">)</span> <span class="k">as</span> <span class="n">tallest</span>
+<span class="k">FROM</span> <span class="n">students</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="k">class</span><span class="p">;</span>
+
+<span class="go"> class │ tallest</span>
+<span class="go">───────┼─────────</span>
+<span class="go"> A     │     186</span>
+<span class="go"> B     │     178</span>
+</pre></div>
+
+
+<p>This gets you the height, but it doesn't get you the name of the 
+student. As a second attempt you might try to find the tallest student 
+based on its height, using a sub-query:</p>
+<div class="highlight"><pre><span></span><span class="k">SELECT</span> <span class="o">*</span>
+<span class="k">FROM</span> <span class="n">students</span>
+<span class="hll"><span class="k">WHERE</span> <span class="p">(</span><span class="k">class</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span> <span class="k">IN</span> <span class="p">(</span>
+</span>    <span class="k">SELECT</span> <span class="k">class</span><span class="p">,</span> <span class="n">max</span><span class="p">(</span><span class="n">height</span><span class="p">)</span> <span class="k">as</span> <span class="n">tallest</span>
+    <span class="k">FROM</span> <span class="n">students</span>
+    <span class="k">GROUP</span> <span class="k">BY</span> <span class="k">class</span>
+<span class="p">);</span>
+
+<span class="go">  name  │ class │ height</span>
+<span class="go">────────┼───────┼────────</span>
+<span class="go"> Haki   │ A     │    186</span>
+<span class="go"> George │ B     │    178</span>
+<span class="go"> David  │ B     │    178</span>
+</pre></div>
+
+
+<p>Now you have all the information about the tallest students in each class, but there is another problem.</p>
+<div class="admonition tip">
+<p class="admonition-title">side note</p>
+<p>The ability to match a set of records like in the previous query (<code>(class, height) IN (...)</code>), is another lesser known, but a very powerful feature of PostgreSQL.</p>
+</div>
+<p>In class "B", there are two students with the same height, which also happen to be the tallest. Using the aggregate function <code>MAX</code> you only get the height, so you may encounter this type of situation.</p>
+<p>The challenge with using <code>MAX</code> is that you choose the 
+height based only on the height, which makes perfect sense in this case,
+ but you still need to pick just one student. A different approach that 
+lets you "rank" rows based on more than one column, is using a window 
+function:</p>
+<div class="highlight"><pre><span></span><span class="k">SELECT</span>
+    <span class="n">students</span><span class="mf">.</span><span class="o">*</span><span class="p">,</span>
+<span class="hll">    <span class="n">ROW_NUMBER</span><span class="p">()</span> <span class="k">OVER</span> <span class="p">(</span>
+</span><span class="hll">        <span class="k">PARTITION</span> <span class="k">BY</span> <span class="k">class</span>
+</span><span class="hll">        <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">height</span> <span class="k">DESC</span><span class="p">,</span> <span class="k">name</span>
+</span><span class="hll">    <span class="p">)</span> <span class="k">AS</span> <span class="n">rn</span>
+</span><span class="k">FROM</span>
+    <span class="n">students</span><span class="p">;</span>
+
+<span class="go">  name  │ class │ height │ rn</span>
+<span class="go">────────┼───────┼────────┼────</span>
+<span class="go"> Haki   │ A     │    186 │  1</span>
+<span class="go"> Jax    │ A     │    182 │  2</span>
+<span class="go"> Dan    │ A     │    175 │  3</span>
+<span class="go"> David  │ B     │    178 │  1</span>
+<span class="go"> George │ B     │    178 │  2</span>
+<span class="go"> Bill   │ B     │    167 │  3</span>
+</pre></div>
+
+
+<p>To "rank" students bases on their height you can attach a row number for each row. The row number is determined for each class (<code>PARTITION BY class</code>) and ranked first by height in descending order, and then by the students' name (<code>ORDER BY height DESC, name</code>). Adding the student name in addition to the height makes the results deterministic (assuming the name is unique).</p>
+<p>To get the rows of only the tallest student in each class you can use a sub-query:</p>
+<div class="highlight"><pre><span></span><span class="k">SELECT</span>
+    <span class="k">name</span><span class="p">,</span> <span class="k">class</span><span class="p">,</span> <span class="n">height</span>
+<span class="k">FROM</span> <span class="p">(</span>
+    <span class="k">SELECT</span>
+        <span class="n">students</span><span class="mf">.</span><span class="o">*</span><span class="p">,</span>
+        <span class="n">ROW_NUMBER</span><span class="p">()</span> <span class="k">OVER</span> <span class="p">(</span>
+            <span class="k">PARTITION</span> <span class="k">BY</span> <span class="k">class</span>
+            <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">height</span> <span class="k">DESC</span><span class="p">,</span> <span class="k">name</span>
+        <span class="p">)</span> <span class="k">AS</span> <span class="n">rn</span>
+    <span class="k">FROM</span>
+        <span class="n">students</span>
+<span class="p">)</span> <span class="k">as</span> <span class="k">inner</span>
+<span class="k">WHERE</span>
+<span class="hll">    <span class="n">rn</span> <span class="o">=</span> <span class="mf">1</span><span class="p">;</span>
+</span>
+<span class="go"> name  │ class │ height</span>
+<span class="go">───────┼───────┼────────</span>
+<span class="go"> Haki  │ A     │    186</span>
+<span class="go"> David │ B     │    178</span>
+</pre></div>
+
+
+<p>You made it! This is the entire row for the tallest student in each class.</p>
+<p><strong>Using <code>DISTINCT ON</code></strong></p>
+<p>Now that you went through all of this trouble, let me show you an easier way:</p>
+<div class="highlight"><pre><span></span><span class="hll"><span class="k">SELECT</span> <span class="k">DISTINCT</span> <span class="k">ON</span> <span class="p">(</span><span class="k">class</span><span class="p">)</span>
+</span>    <span class="o">*</span>
+<span class="k">FROM</span>
+    <span class="n">students</span>
+<span class="k">ORDER</span> <span class="k">BY</span>
+<span class="hll">    <span class="k">class</span><span class="p">,</span> <span class="n">height</span> <span class="k">DESC</span><span class="p">,</span> <span class="k">name</span><span class="p">;</span>
+</span>
+<span class="go"> name  │ class │ height</span>
+<span class="go">───────┼───────┼────────</span>
+<span class="go"> Haki  │ A     │    186</span>
+<span class="go"> David │ B     │    178</span>
+</pre></div>
+
+
+<p>Pretty nice, right? I was blown away when <a href="https://hakibenita.com/the-many-faces-of-distinct-in-postgre-sql#distinct-on">I first discovered <code>DISTINCT ON</code></a>. Coming from Oracle, there was nothing like that, and as far as I know, no other database other than PostgreSQL does.</p>
+<p><strong>Intuitively understand <code>DISTINCT ON</code></strong></p>
+<p>To understand how <code>DISTINCT ON</code> works, let's go over what it does step by step. This is the raw data in the table:</p>
+<div class="highlight"><pre><span></span><span class="k">SELECT</span> <span class="o">*</span>
+<span class="k">FROM</span> <span class="n">students</span><span class="p">;</span>
+
+<span class="go">  name  │ class │ height</span>
+<span class="go">────────┼───────┼────────</span>
+<span class="go"> Haki   │ A     │    186</span>
+<span class="go"> Dan    │ A     │    175</span>
+<span class="go"> Jax    │ A     │    182</span>
+<span class="go"> George │ B     │    178</span>
+<span class="go"> Bill   │ B     │    167</span>
+<span class="go"> David  │ B     │    178</span>
+</pre></div>
+
+
+<p>Next, sort the data:</p>
+<div class="highlight"><pre><span></span><span class="k">SELECT</span> <span class="o">*</span>
+<span class="k">FROM</span> <span class="n">students</span>
+<span class="hll"><span class="k">ORDER</span> <span class="k">BY</span> <span class="k">class</span><span class="p">,</span> <span class="n">height</span> <span class="k">DESC</span><span class="p">,</span> <span class="k">name</span><span class="p">;</span>
+</span>
+<span class="go">  name  │ class │ height</span>
+<span class="go">────────┼───────┼────────</span>
+<span class="go"> Haki   │ A     │    186</span>
+<span class="go"> Jax    │ A     │    182</span>
+<span class="go"> Dan    │ A     │    175</span>
+<span class="go"> David  │ B     │    178</span>
+<span class="go"> George │ B     │    178</span>
+<span class="go"> Bill   │ B     │    167</span>
+</pre></div>
+
+
+<p>Then, add the <code>DISTINCT ON</code> clause:</p>
+<div class="highlight"><pre><span></span><span class="hll"><span class="k">SELECT</span> <span class="k">DISTINCT</span> <span class="k">ON</span> <span class="p">(</span><span class="k">class</span><span class="p">)</span> <span class="o">*</span>
+</span><span class="k">FROM</span> <span class="n">students</span>
+<span class="k">ORDER</span> <span class="k">BY</span> <span class="k">class</span><span class="p">,</span> <span class="n">height</span> <span class="k">DESC</span><span class="p">,</span> <span class="n">name</span><span class="p">;</span>
+</pre></div>
+
+
+<p>To understand what <code>DISTINCT ON</code> does at this point, we need to take two steps.</p>
+<p>First, split the data to groups based on the columns in the <code>DISTINCT ON</code> clause, in this case by <code>class</code>:</p>
+<div class="highlight"><pre><span></span>  name  │ class │ height
+─────────────────────────
+ Haki   │ A     │    186  ┓
+ Jax    │ A     │    182  ┣━━ class=A
+ Dan    │ A     │    175  ┛
+
+ David  │ B     │    178  ┓
+ George │ B     │    178  ┣━━ class=B
+ Bill   │ B     │    167  ┛
+</pre></div>
+
+
+<p>Next, keep only the first row in each group:</p>
+<div class="highlight"><pre><span></span>  name  │ class │ height
+─────────────────────────
+ Haki   │ A     │    186  ┣━━ class=A
+ David  │ B     │    178  ┣━━ class=B
+</pre></div>
+
+
+<p>And there you have it! The tallest student in each class.</p>
+<p>The only requirement <code>DISTINCT ON</code> has, is that the leading columns in the <code>ORDER BY</code> clause will match the columns in the <code>DISTINCT ON</code> clause. The remaining columns in the <code>ORDER BY</code> clause are used to determine which row is selected for each group.</p>
+<p>To illustrate how the <code>ORDER BY</code> affect the results, consider this query to find the <em>shortest</em> student in each class:</p>
+<div class="highlight"><pre><span></span><span class="k">SELECT</span> <span class="k">DISTINCT</span> <span class="k">ON</span> <span class="p">(</span><span class="k">class</span><span class="p">)</span>
+    <span class="o">*</span>
+<span class="k">FROM</span>
+    <span class="n">students</span>
+<span class="k">ORDER</span> <span class="k">BY</span>
+<span class="hll">    <span class="k">class</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="k">name</span><span class="p">;</span>
+</span>
+<span class="go"> name │ class │ height</span>
+<span class="go">──────┼───────┼────────</span>
+<span class="go"> Dan  │ A     │    175</span>
+<span class="go"> Bill │ B     │    167</span>
+</pre></div>
+
+
+<p>To pick the shortest student in each class, you only have to change 
+the sort order, so that the first row of each group is the shortest 
+student.</p>
+<hr>
+<h2 id="generate-uuid-without-extensions"><a class="toclink" href="#generate-uuid-without-extensions">Generate UUID Without Extensions</a></h2>
+<p>To generate UUIDs in PostgreSQL prior to version 13 you probably used the <a href="https://www.postgresql.org/docs/current/uuid-ossp.html#id-1.11.7.53.5" rel="noopener"><code>uuid-ossp</code> extension</a>:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">CREATE</span> <span class="k">EXTENSION</span> <span class="s s-Name">"uuid-ossp"</span><span class="p">;</span>
+<span class="go">CREATE EXTENSION</span>
+
+<span class="hll"><span class="gp">db=#</span> <span class="k">SELECT</span> <span class="n">uuid_generate_v4</span><span class="p">()</span> <span class="k">AS</span> <span class="nb">uuid</span><span class="p">;</span>
+</span><span class="go">                 uuid</span>
+<span class="go">──────────────────────────────────────</span>
+<span class="go"> 8e55146d-0ce5-40ab-a346-5dbd466ff5f2</span>
+</pre></div>
+
+
+<p>Starting at version 13 there is a <a href="https://www.postgresql.org/docs/current/functions-uuid.html" rel="noopener">built-in function to generate random (version 4) UUIDs</a>:</p>
+<div class="highlight"><pre><span></span><span class="hll"><span class="gp">db=#</span> <span class="k">SELECT</span> <span class="n">gen_random_uuid</span><span class="p">()</span> <span class="k">AS</span> <span class="nb">uuid</span><span class="p">;</span>
+</span><span class="go">                 uuid</span>
+<span class="go">──────────────────────────────────────</span>
+<span class="go"> ba1ac0f5-5d4d-4d80-974d-521dbdcca2b2</span>
+</pre></div>
+
+
+<p>The <code>uuid-ossp</code> extension is still needed if you want to generate UUIDs other than version 4.</p>
+<hr>
+<h2 id="generate-reproducible-random-data"><a class="toclink" href="#generate-reproducible-random-data">Generate Reproducible Random Data</a></h2>
+<p>Generating radom data is very useful for many things such for 
+demonstrations or testing. In both cases, it's also useful to be able to
+ reproduce the "random" data.</p>
+<p>Using PostgreSQL <code>random</code> function you can <a href="https://hakibenita.com/sql-for-data-analysis#random">produce different types of random data</a>. For example:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">SELECT</span>
+    <span class="n">random</span><span class="p">()</span> <span class="k">AS</span> <span class="n">random_float</span><span class="p">,</span>
+    <span class="n">ceil</span><span class="p">(</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="mf">10</span><span class="p">)</span> <span class="k">AS</span> <span class="n">random_int_0_10</span><span class="p">,</span>
+    <span class="s1">'2022-01-01'</span><span class="o">::</span><span class="nb">date</span> <span class="o">+</span> <span class="nb">interval</span> <span class="s1">'1 days'</span> <span class="o">*</span> <span class="n">ceil</span><span class="p">(</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="mf">365</span><span class="p">)</span> <span class="k">AS</span> <span class="n">random_day_in_2022</span><span class="p">;</span>
+
+<span class="go">─[ RECORD 1 ]──────┬────────────────────</span>
+<span class="go">random_float       │ 0.6031888056092001</span>
+<span class="go">random_int_0_10    │ 3</span>
+<span class="go">random_day_in_2022 │ 2022-11-10 00:00:00</span>
+</pre></div>
+
+
+<p>If you execute this query again, you will get different results:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">SELECT</span>
+    <span class="n">random</span><span class="p">()</span> <span class="k">AS</span> <span class="n">random_float</span><span class="p">,</span>
+    <span class="n">ceil</span><span class="p">(</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="mf">10</span><span class="p">)</span> <span class="k">AS</span> <span class="n">random_int_0_10</span><span class="p">,</span>
+    <span class="s1">'2022-01-01'</span><span class="o">::</span><span class="nb">date</span> <span class="o">+</span> <span class="nb">interval</span> <span class="s1">'1 days'</span> <span class="o">*</span> <span class="n">ceil</span><span class="p">(</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="mf">365</span><span class="p">)</span> <span class="k">AS</span> <span class="n">random_day_in_2022</span><span class="p">;</span>
+
+<span class="go">─[ RECORD 1 ]──────┬────────────────────</span>
+<span class="go">random_float       │ 0.7363406030115378</span>
+<span class="go">random_int_0_10    │ 2</span>
+<span class="go">random_day_in_2022 │ 2022-02-23 00:00:00</span>
+</pre></div>
+
+
+<p>To generate reproducible random data, you can use <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-RANDOM-TABLE" rel="noopener"><code>setseed</code></a>:</p>
+<div class="highlight"><pre><span></span><span class="hll"><span class="gp">db=#</span> <span class="k">SELECT</span> <span class="n">setseed</span><span class="p">(</span><span class="mf">0.4050</span><span class="p">);</span>
+</span><span class="go"> setseed</span>
+<span class="go">─────────</span>
+
+<span class="go">(1 row)</span>
+
+<span class="gp">db=#</span> <span class="k">SELECT</span>
+    <span class="n">random</span><span class="p">()</span> <span class="k">AS</span> <span class="n">random_float</span><span class="p">,</span>
+    <span class="n">ceil</span><span class="p">(</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="mf">10</span><span class="p">)</span> <span class="k">AS</span> <span class="n">random_int_0_10</span><span class="p">,</span>
+    <span class="s1">'2022-01-01'</span><span class="o">::</span><span class="nb">date</span> <span class="o">+</span> <span class="nb">interval</span> <span class="s1">'1 days'</span> <span class="o">*</span> <span class="n">ceil</span><span class="p">(</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="mf">365</span><span class="p">)</span> <span class="k">AS</span> <span class="n">random_day_in_2022</span>
+<span class="k">FROM</span>
+    <span class="n">generate_series</span><span class="p">(</span><span class="mf">1</span><span class="p">,</span> <span class="mf">2</span><span class="p">);</span>
+
+<span class="go">    random_float    │ random_int_0_10 │ random_day_in_2022</span>
+<span class="go">────────────────────┼─────────────────┼─────────────────────</span>
+<span class="hll"><span class="go"> 0.1924247516794324 │               9 │ 2022-12-17 00:00:00</span>
+</span><span class="hll"><span class="go"> 0.9720620908236377 │               5 │ 2022-06-13 00:00:00</span>
+</span></pre></div>
+
+
+<p>If you execute the same block again in a new session, even in a different database, it will produce the exact same results:</p>
+<div class="highlight"><pre><span></span><span class="hll"><span class="gp">otherdb=#</span> <span class="k">SELECT</span> <span class="n">setseed</span><span class="p">(</span><span class="mf">0.4050</span><span class="p">);</span>
+</span><span class="go"> setseed</span>
+<span class="go">─────────</span>
+
+<span class="go">(1 row)</span>
+
+<span class="gp">otherdb=#</span> <span class="k">SELECT</span>
+    <span class="n">random</span><span class="p">()</span> <span class="k">AS</span> <span class="n">random_float</span><span class="p">,</span>
+    <span class="n">ceil</span><span class="p">(</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="mf">10</span><span class="p">)</span> <span class="k">AS</span> <span class="n">random_int_0_10</span><span class="p">,</span>
+    <span class="s1">'2022-01-01'</span><span class="o">::</span><span class="nb">date</span> <span class="o">+</span> <span class="nb">interval</span> <span class="s1">'1 days'</span> <span class="o">*</span> <span class="n">ceil</span><span class="p">(</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="mf">365</span><span class="p">)</span> <span class="k">AS</span> <span class="n">random_day_in_2022</span>
+<span class="k">FROM</span>
+    <span class="n">generate_series</span><span class="p">(</span><span class="mf">1</span><span class="p">,</span> <span class="mf">2</span><span class="p">);</span>
+
+<span class="go">    random_float    │ random_int_0_10 │ random_day_in_2022</span>
+<span class="go">────────────────────┼─────────────────┼─────────────────────</span>
+<span class="hll"><span class="go"> 0.1924247516794324 │               9 │ 2022-12-17 00:00:00</span>
+</span><span class="hll"><span class="go"> 0.9720620908236377 │               5 │ 2022-06-13 00:00:00</span>
+</span></pre></div>
+
+
+<p>Notice how the results are random, but still exactly the same. The 
+next time you do a demonstration or share a script, make sure to include
+ <code>setseed</code> so your results could be easily reproduced.</p>
+<hr>
+<h2 id="add-constraints-without-validating-immediately"><a class="toclink" href="#add-constraints-without-validating-immediately">Add Constraints Without Validating Immediately</a></h2>
+<p>Constraint are an integral part of any RDBMS. They keep data clean 
+and reliable, and should be used whenever possible. In living breathing 
+systems, you often need to add new constraints, and adding certain types
+ of constraints may require very restrictive locks that interfere with 
+the operation of the live system.</p>
+<p>To illustrate, add a simple check constraint on a large table:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">orders</span> <span class="k">ADD</span> <span class="k">CONSTRAINT</span> <span class="n">check_price_gt_zero</span> <span class="k">CHECK</span> <span class="p">(</span><span class="n">price</span> <span class="o">&gt;=</span> <span class="mf">0</span><span class="p">);</span>
+<span class="go">ALTER TABLE</span>
+<span class="go">Time: 10745.662 ms (00:10.746)</span>
+</pre></div>
+
+
+<p>This statement adds a check constraint on the price of an order, to 
+make sure it's greater than or equal to zero. In the process of adding 
+the constraint, the database scanned the entire table to make sure the 
+constraint is valid for all the existing rows. The process took ~10s, 
+and during that time, the table was locked.</p>
+<p><strong>In PostgreSQL, you can split the process of adding a constraint into two steps.</strong></p>
+<p>First, add the constraint and only validate new data, but don't check that existing data is valid:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">orders</span> <span class="k">ADD</span> <span class="k">CONSTRAINT</span> <span class="n">check_price_gt_zero</span> <span class="k">CHECK</span> <span class="p">(</span><span class="n">price</span> <span class="o">&gt;=</span> <span class="mf">0</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">VALID</span><span class="p">;</span>
+<span class="go">ALTER TABLE</span>
+<span class="go">Time: 13.590 ms</span>
+</pre></div>
+
+
+<p>The <code>NOT VALID</code> in the end tells PostgreSQL to not 
+validate the new constraint for existing rows. This means the database 
+does not have to scan the entire table. Notice how this statement took 
+significantly less time compared to the previous, it was almost 
+instantaneous.</p>
+<p>Next, validate the constraint for the existing data with a much more permissive lock that allows other operations on the table:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">orders</span> <span class="k">VALIDATE</span> <span class="k">CONSTRAINT</span> <span class="n">check_price_gt_zero</span><span class="p">;</span>
+<span class="go">ALTER TABLE</span>
+<span class="go">Time: 11231.189 ms (00:11.231)</span>
+</pre></div>
+
+
+<p>Notice how validating the constraint took roughly the same time as 
+the first example, which added and validated the constraint. This 
+reaffirms that when adding a constraint to an existing table, most time 
+is spent validating existing rows. Splitting the process into two steps 
+allows you to reduce the time the table is locked.</p>
+<p>The documentation also mentions <a href="https://www.postgresql.org/docs/current/sql-altertable.html#SQL-ALTERTABLE-NOTES" rel="noopener">another use case for <code>NOT VALID</code></a> - enforcing a constraint only on future updates, even if there are some existing bad values. That is, you would add <code>NOT VALID</code> and never do the <code>VALIDATE</code>.</p>
+<p>Check out this great article from the engineering team at Paypal about <a href="https://medium.com/paypal-tech/postgresql-at-scale-database-schema-changes-without-downtime-20d3749ed680" rel="noopener">making schema changes without downtime</a>, and my own tip to <a href="https://hakibenita.com/sql-tricks-application-dba#disable-constraints-and-indexes-during-bulk-loads" rel="noopener">disable constraints and indexes during bulk loads</a>.</p>
+<hr>
+<h2 id="synonyms-in-postgresql"><a class="toclink" href="#synonyms-in-postgresql">Synonyms in PostgreSQL</a></h2>
+<p>Synonyms are a way to reference objects by another name, similar to 
+symlinks in Linux. If you're coming from Oracle you are probably 
+familiar with synonyms, but otherwise you may have never heard about it.
+ PostgreSQL does not have a feature called "synonyms", but it doesn't 
+mean it's not possible.</p>
+<p>To have a name reference a different database object, you first need 
+to understand how PostgreSQL resolves unqualified names. For example, if
+ you are connected to the database with the user <code>haki</code>, and you reference a table <code>foo</code>, PostgreSQL will search for the following objects, in this order:</p>
+<ol>
+<li><code>haki.foo</code></li>
+<li><code>public.foo</code></li>
+</ol>
+<p>This order is determined by the <a href="https://www.postgresql.org/docs/current/ddl-schemas.html#DDL-SCHEMAS-PATH" rel="noopener"><code>search_path</code> parameter</a>:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">SHOW</span> <span class="n">search_path</span><span class="p">;</span>
+<span class="go">   search_path</span>
+<span class="go">─────────────────</span>
+<span class="go"> "$user", public</span>
+</pre></div>
+
+
+<p>The first value, <code>"$user"</code> is a special value that resolves to the name of the currently connected user. The second value, <code>public</code>, is the name of the default schema.</p>
+<p>To demonstrate some of the things you can do with search path, create a table <code>foo</code> in database <code>db</code>:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">foo</span> <span class="p">(</span><span class="k">value</span> <span class="nb">TEXT</span><span class="p">);</span>
+<span class="go">CREATE TABLE</span>
+
+<span class="gp">db=#</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">foo</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">'A'</span><span class="p">);</span>
+<span class="go">INSERT 0 1</span>
+
+<span class="gp">db=#</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">foo</span><span class="p">;</span>
+<span class="go"> value</span>
+<span class="go">───────</span>
+<span class="go"> A</span>
+<span class="go">(1 row)</span>
+</pre></div>
+
+
+<p>If for some reason you want the user <code>haki</code> to view a different object when they reference the name <code>foo</code>, you have two options:</p>
+<p><strong>1. Create an object named <code>foo</code> in a schema called <code>haki</code>:</strong></p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">CREATE</span> <span class="k">SCHEMA</span> <span class="n">haki</span><span class="p">;</span>
+<span class="go">CREATE SCHEMA</span>
+
+<span class="gp">db=#</span> <span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">haki</span><span class="mf">.</span><span class="n">foo</span> <span class="p">(</span><span class="k">value</span> <span class="nb">text</span><span class="p">);</span>
+<span class="go">CREATE TABLE</span>
+
+<span class="gp">db=#</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">haki</span><span class="mf">.</span><span class="n">foo</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">'B'</span><span class="p">);</span>
+<span class="go">INSERT 0 1</span>
+
+<span class="gp">db=#</span> <span class="kp">\conninfo</span>
+<span class="go">You are connected to database "db" as user "haki"</span>
+
+<span class="hll"><span class="gp">db=#</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">foo</span><span class="p">;</span>
+</span><span class="hll"><span class="go">value</span>
+</span><span class="hll"><span class="go">───────</span>
+</span><span class="hll"><span class="go">B</span>
+</span></pre></div>
+
+
+<p>Notice how when the user <code>haki</code> referenced the name <code>foo</code>, PostgreSQL resolved the name to <code>haki.foo</code> and not <code>public.foo</code>. This is because the schema <code>haki</code> comes before <code>public</code> in the search path.</p>
+<p><strong>2. Update the search path:</strong></p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">CREATE</span> <span class="k">SCHEMA</span> <span class="n">synonyms</span><span class="p">;</span>
+<span class="go">CREATE SCHEMA</span>
+
+<span class="gp">db=#</span> <span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">synonyms</span><span class="mf">.</span><span class="n">foo</span> <span class="p">(</span><span class="k">value</span> <span class="nb">text</span><span class="p">);</span>
+<span class="go">CREATE TABLE</span>
+
+<span class="gp">db=#</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">synonyms</span><span class="mf">.</span><span class="n">foo</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">'C'</span><span class="p">);</span>
+<span class="go">INSERT 0 1</span>
+
+<span class="gp">db=#</span> <span class="k">SHOW</span> <span class="n">search_path</span><span class="p">;</span>
+<span class="go">   search_path</span>
+<span class="go">─────────────────</span>
+<span class="hll"><span class="go"> "$user", public</span>
+</span>
+<span class="gp">db=#</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">foo</span><span class="p">;</span>
+<span class="go"> value</span>
+<span class="go">───────</span>
+<span class="hll"><span class="go"> A</span>
+</span>
+<span class="hll"><span class="gp">db=#</span> <span class="k">SET</span> <span class="n">search_path</span> <span class="k">TO</span> <span class="n">synonyms</span><span class="p">,</span> <span class="s s-Name">"$user"</span><span class="p">,</span> <span class="n">public</span><span class="p">;</span>
+</span><span class="go">SET</span>
+
+<span class="gp">db=#</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">foo</span><span class="p">;</span>
+<span class="go"> value</span>
+<span class="go">───────</span>
+<span class="hll"><span class="go"> C</span>
+</span></pre></div>
+
+
+<p>Notice how after changing the search path to include the schema <code>synonyms</code>, PostgreSQL resolved the name <code>foo</code> to <code>synonyms.foo</code>.</p>
+<p><strong>When synonyms are useful?</strong></p>
+<p>I used to think that synonyms are a code smell that should be 
+avoided, but over time I found a few valid use cases for when they are 
+useful. One of those use cases are zero downtime migrations.</p>
+<p>When you are making changes to a table on a live system, you often 
+need to support both the new and the old version of the application at 
+the same time. This poses a challenge, because each version of the 
+application expects the table to have a different structure.</p>
+<p>Take for example a migration to remove a column from a table. While 
+the migration is running, the old version of the application is active, 
+and it expects the column to exist in the table, so you can't simply 
+remove it. One way to deal with this is to release the new version in 
+two stages - the first ignores the field, and the second removes it.</p>
+<p>If however, you need to make the change in a single release, you can 
+provide the old version with a view of the table that includes the 
+column, and only then remove it. For that, you can use a "synonym":</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="kp">\conninfo</span>
+<span class="go">You are now connected to database "db" as user "app".</span>
+
+<span class="gp">db=#</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">users</span><span class="p">;</span>
+<span class="go"> username │ active</span>
+<span class="go">──────────┼────────</span>
+<span class="go"> haki     │ t</span>
+</pre></div>
+
+
+<p>The application is connected to database <code>db</code> with the user <code>app</code>. You want to remove the column <code>active</code>, but the application is using this column. To safely apply the migration you need to "fool" the user <code>app</code> into thinking the column is still there while the old version is active:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="kp">\conninfo</span>
+<span class="go">You are now connected to database "db" as user "admin".</span>
+
+<span class="gp">db=#</span> <span class="k">CREATE</span> <span class="k">SCHEMA</span> <span class="n">app</span><span class="p">;</span>
+<span class="go">CREATE SCHEMA</span>
+
+<span class="gp">db=#</span> <span class="k">GRANT</span> <span class="n">USAGE</span> <span class="k">ON</span> <span class="k">SCHEMA</span> <span class="n">app</span> <span class="k">TO</span> <span class="n">app</span><span class="p">;</span>
+<span class="go">GRANT</span>
+
+<span class="hll"><span class="gp">db=#</span> <span class="k">CREATE</span> <span class="k">VIEW</span> <span class="n">app</span><span class="mf">.</span><span class="n">users</span> <span class="k">AS</span> <span class="k">SELECT</span> <span class="n">username</span><span class="p">,</span> <span class="k">true</span> <span class="k">AS</span> <span class="n">active</span> <span class="k">FROM</span> <span class="n">public</span><span class="mf">.</span><span class="n">users</span><span class="p">;</span>
+</span><span class="go">CREATE VIEW</span>
+
+<span class="gp">db=#</span> <span class="k">GRANT</span> <span class="k">SELECT</span> <span class="k">ON</span> <span class="n">app</span><span class="mf">.</span><span class="n">users</span> <span class="k">TO</span> <span class="n">app</span><span class="p">;</span>
+<span class="go">GRANT</span>
+</pre></div>
+
+
+<p>To "fool" the user <code>app</code>, you created a schema by the name of the user, and a view with a calculated field <code>active</code>. Now, when the application is connected with user <code>app</code>, it will see the view and not the table, so it's safe to remove the column:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="kp">\conninfo</span>
+<span class="go">You are now connected to database "db" as user "admin".</span>
+
+<span class="hll"><span class="gp">db=#</span> <span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">users</span> <span class="k">DROP</span> <span class="k">COLUMN</span> <span class="n">active</span><span class="p">;</span>
+</span><span class="go">ALTER TABLE</span>
+
+<span class="gp">db=#</span> <span class="kp">\connect</span> <span class="ss">db</span> <span class="ss">app</span>
+<span class="go">You are now connected to database "db" as user "app".</span>
+
+<span class="gp">db=#</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">users</span><span class="p">;</span>
+<span class="go"> username │ active</span>
+<span class="go">──────────┼────────</span>
+<span class="hll"><span class="go"> haki     │ t</span>
+</span></pre></div>
+
+
+<p>You dropped the column and the application sees the calculated field instead! All is left is some cleanup and you are done.</p>
+<hr>
+<h2 id="find-overlapping-ranges"><a class="toclink" href="#find-overlapping-ranges">Find Overlapping Ranges</a></h2>
+<p>Say you have a table of meetings:</p>
+<div class="highlight"><pre><span></span><span class="gp">db=#</span> <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">meetings</span><span class="p">;</span>
+<span class="go">       starts_at     │        ends_at</span>
+<span class="go">─────────────────────┼─────────────────────</span>
+<span class="go"> 2021-10-01 10:00:00 │ 2021-10-01 10:30:00</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00</span>
+<span class="go"> 2021-10-01 12:30:00 │ 2021-10-01 12:45:00</span>
+</pre></div>
+
+
+<p></p><details><p></p>
+<p></p><summary>⚙ Table data</summary><p></p>
+<p>You can use the following CTE to reproduce the queries in this section:</p>
+<div class="highlight"><pre><span></span><span class="k">WITH</span> <span class="n">meetings</span> <span class="k">AS</span> <span class="p">(</span>
+    <span class="k">SELECT</span>
+        <span class="n">starts_at</span><span class="o">::</span><span class="nb">timestamptz</span> <span class="k">AS</span> <span class="n">starts_at</span><span class="p">,</span>
+        <span class="n">ends_at</span><span class="o">::</span><span class="nb">timestamptz</span> <span class="k">AS</span> <span class="n">ends_at</span>
+    <span class="k">FROM</span> <span class="p">(</span><span class="k">VALUES</span>
+        <span class="p">(</span><span class="s1">'2021-10-01 10:00 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 10:30 UTC'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'2021-10-01 11:15 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 12:00 UTC'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'2021-10-01 12:30 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 12:45 UTC'</span><span class="p">)</span>
+    <span class="p">)</span> <span class="k">AS</span> <span class="n">t</span><span class="p">(</span>
+        <span class="n">starts_at</span><span class="p">,</span>               <span class="n">ends_at</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">meetings</span><span class="p">;</span>
+</pre></div>
+
+
+<p></p></details><p></p>
+<p>You want to schedule a new meeting, but before you do that, you want 
+to make sure it does not overlap with another meeting. There are several
+ scenarios you need to consider:</p>
+<ul>
+<li><strong>[A]</strong> New meeting ends after an existing meeting starts</li>
+</ul>
+<div class="highlight"><pre><span></span>|-------NEW MEETING--------|
+    |*******EXISTING MEETING*******|
+</pre></div>
+
+
+<ul>
+<li><strong>[B]</strong> New meeting starts before an existing meetings ends</li>
+</ul>
+<div class="highlight"><pre><span></span>        |-------NEW MEETING--------|
+|*******EXISTING MEETING*******|
+</pre></div>
+
+
+<ul>
+<li><strong>[C]</strong> New meeting takes place during an existing meeting</li>
+</ul>
+<div class="highlight"><pre><span></span>    |----NEW MEETING----|
+|*******EXISTING MEETING*******|
+</pre></div>
+
+
+<ul>
+<li><strong>[D]</strong> Existing meeting takes place while the new meeting is scheduled</li>
+</ul>
+<div class="highlight"><pre><span></span>|--------NEW MEETING--------|
+    |**EXISTING MEETING**|
+</pre></div>
+
+
+<ul>
+<li><strong>[E]</strong> New meeting is scheduled at exactly the same time as an existing meeting</li>
+</ul>
+<div class="highlight"><pre><span></span>|--------NEW MEETING--------|
+|*****EXISTING MEETING******|
+</pre></div>
+
+
+<p>To test a query that check for overlaps, you can prepare a table with all the scenarios above, and try a simple condition:</p>
+<div class="highlight"><pre><span></span><span class="k">WITH</span> <span class="n">new_meetings</span> <span class="k">AS</span> <span class="p">(</span>
+    <span class="k">SELECT</span>
+        <span class="n">id</span><span class="p">,</span>
+        <span class="n">starts_at</span><span class="o">::</span><span class="nb">timestamptz</span> <span class="k">as</span> <span class="n">starts_at</span><span class="p">,</span>
+        <span class="n">ends_at</span><span class="o">::</span><span class="nb">timestamptz</span> <span class="k">as</span> <span class="n">ends_at</span>
+    <span class="k">FROM</span> <span class="p">(</span><span class="k">VALUES</span>
+        <span class="p">(</span><span class="s1">'A'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:10 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:55 UTC'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'B'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:20 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 12:05 UTC'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'C'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:20 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:55 UTC'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'D'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:10 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 12:05 UTC'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'E'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:15 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 12:00 UTC'</span><span class="p">)</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">t</span><span class="p">(</span>
+        <span class="n">id</span><span class="p">,</span>   <span class="n">starts_at</span><span class="p">,</span>               <span class="n">ends_at</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="k">SELECT</span>
+    <span class="o">*</span>
+<span class="k">FROM</span>
+    <span class="n">meetings</span><span class="p">,</span> <span class="n">new_meetings</span>
+<span class="k">WHERE</span>
+    <span class="n">new_meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="k">BETWEEN</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="k">and</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">ends_at</span>
+    <span class="k">OR</span> <span class="n">new_meetings</span><span class="mf">.</span><span class="n">ends_at</span> <span class="k">BETWEEN</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="k">and</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">ends_at</span><span class="p">;</span>
+
+<span class="go">       starts_at     │        ends_at      │ id │       starts_at     │        ends_at</span>
+<span class="go">─────────────────────┼─────────────────────┼────┼─────────────────────┼────────────────────</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ A  │ 2021-10-01 11:10:00 │ 2021-10-01 11:55:00</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ B  │ 2021-10-01 11:20:00 │ 2021-10-01 12:05:00</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ C  │ 2021-10-01 11:20:00 │ 2021-10-01 11:55:00</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ E  │ 2021-10-01 11:15:00 │ 2021-10-01 12:00:00</span>
+</pre></div>
+
+
+<p>The first attempt found an overlap with 4 out of 5 scenarios. It did not detect the overlap for scenario <code>D</code>,
+ where the new meetings starts before and ends after an existing 
+meeting. To handle this scenario as well, you need to make the condition
+ a bit longer:</p>
+<div class="highlight"><pre><span></span><span class="k">WITH</span> <span class="n">new_meetings</span> <span class="k">AS</span> <span class="p">(</span><span class="cm">/* ... */</span><span class="p">)</span>
+<span class="k">SELECT</span>
+    <span class="o">*</span>
+<span class="k">FROM</span>
+    <span class="n">meetings</span><span class="p">,</span> <span class="n">new_meetings</span>
+<span class="k">WHERE</span>
+    <span class="n">new_meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="k">BETWEEN</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="k">and</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">ends_at</span>
+    <span class="k">OR</span> <span class="n">new_meetings</span><span class="mf">.</span><span class="n">ends_at</span> <span class="k">BETWEEN</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="k">and</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">ends_at</span>
+<span class="hll">    <span class="k">OR</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="k">BETWEEN</span> <span class="n">new_meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="k">and</span> <span class="n">new_meetings</span><span class="mf">.</span><span class="n">ends_at</span>
+</span><span class="hll">    <span class="k">OR</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">ends_at</span> <span class="k">BETWEEN</span> <span class="n">new_meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="k">and</span> <span class="n">new_meetings</span><span class="mf">.</span><span class="n">ends_at</span><span class="p">;</span>
+</span>
+
+<span class="go">       starts_at     │        ends_at      │ id │       starts_at     │        ends_at</span>
+<span class="go">─────────────────────┼─────────────────────┼────┼─────────────────────┼────────────────────</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ A  │ 2021-10-01 11:10:00 │ 2021-10-01 11:55:00</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ B  │ 2021-10-01 11:20:00 │ 2021-10-01 12:05:00</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ C  │ 2021-10-01 11:20:00 │ 2021-10-01 11:55:00</span>
+<span class="hll"><span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ D  │ 2021-10-01 11:10:00 │ 2021-10-01 12:05:00</span>
+</span><span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ E  │ 2021-10-01 11:15:00 │ 2021-10-01 12:00:00</span>
+</pre></div>
+
+
+<p>The query now detects an overlap in all 5 scenarios, but, consider these additional scenarios:</p>
+<ul>
+<li><strong>[F]</strong> New meeting is scheduled immediately after an existing meetings</li>
+</ul>
+<div class="highlight"><pre><span></span>                            |--------NEW MEETING--------|
+|*****EXISTING MEETING******|
+</pre></div>
+
+
+<ul>
+<li><strong>[G]</strong> New meeting is scheduled to end immediately when an existing meeting starts</li>
+</ul>
+<div class="highlight"><pre><span></span>|--------NEW MEETING--------|
+                            |*****EXISTING MEETING******|
+</pre></div>
+
+
+<p>Back-to-back meetings are very common, and they should not be 
+detected as an overlap. Adding the two scenarios to the test, and trying
+ the query:</p>
+<div class="highlight"><pre><span></span><span class="k">WITH</span> <span class="n">new_meetings</span> <span class="k">AS</span> <span class="p">(</span>
+    <span class="k">SELECT</span>
+        <span class="n">id</span><span class="p">,</span>
+        <span class="n">starts_at</span><span class="o">::</span><span class="nb">timestamptz</span> <span class="k">as</span> <span class="n">starts_at</span><span class="p">,</span>
+        <span class="n">ends_at</span><span class="o">::</span><span class="nb">timestamptz</span> <span class="k">as</span> <span class="n">ends_at</span>
+    <span class="k">FROM</span> <span class="p">(</span><span class="k">VALUES</span>
+        <span class="p">(</span><span class="s1">'A'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:10 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:55 UTC'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'B'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:20 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 12:05 UTC'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'C'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:20 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:55 UTC'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'D'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:10 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 12:05 UTC'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'E'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:15 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 12:00 UTC'</span><span class="p">),</span>
+<span class="hll">        <span class="p">(</span><span class="s1">'F'</span><span class="p">,</span> <span class="s1">'2021-10-01 12:00 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 12:10 UTC'</span><span class="p">),</span>
+</span><span class="hll">        <span class="p">(</span><span class="s1">'G'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:00 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:15 UTC'</span><span class="p">)</span>
+</span>    <span class="p">)</span> <span class="k">as</span> <span class="n">t</span><span class="p">(</span>
+        <span class="n">id</span><span class="p">,</span>   <span class="n">starts_at</span><span class="p">,</span>               <span class="n">ends_at</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="k">SELECT</span>
+    <span class="o">*</span>
+<span class="k">FROM</span>
+    <span class="n">meetings</span><span class="p">,</span> <span class="n">new_meetings</span>
+<span class="k">WHERE</span>
+    <span class="n">new_meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="k">BETWEEN</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="k">and</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">ends_at</span>
+    <span class="k">OR</span> <span class="n">new_meetings</span><span class="mf">.</span><span class="n">ends_at</span> <span class="k">BETWEEN</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="k">and</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">ends_at</span>
+    <span class="k">OR</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="k">BETWEEN</span> <span class="n">new_meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="k">and</span> <span class="n">new_meetings</span><span class="mf">.</span><span class="n">ends_at</span>
+    <span class="k">OR</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">ends_at</span> <span class="k">BETWEEN</span> <span class="n">new_meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="k">and</span> <span class="n">new_meetings</span><span class="mf">.</span><span class="n">ends_at</span><span class="p">;</span>
+
+<span class="go">       starts_at     │        ends_at      │ id │       starts_at     │        ends_at</span>
+<span class="go">─────────────────────┼─────────────────────┼────┼─────────────────────┼────────────────────</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ A  │ 2021-10-01 11:10:00 │ 2021-10-01 11:55:00</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ B  │ 2021-10-01 11:20:00 │ 2021-10-01 12:05:00</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ C  │ 2021-10-01 11:20:00 │ 2021-10-01 11:55:00</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ D  │ 2021-10-01 11:10:00 │ 2021-10-01 12:05:00</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ E  │ 2021-10-01 11:15:00 │ 2021-10-01 12:00:00</span>
+<span class="hll"><span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ F  │ 2021-10-01 12:00:00 │ 2021-10-01 12:10:00</span>
+</span><span class="hll"><span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ G  │ 2021-10-01 11:00:00 │ 2021-10-01 11:15:00</span>
+</span></pre></div>
+
+
+<p>The two back-to-back meetings, scenarios <code>F</code> and <code>G</code>, are incorrectly classified as overlaps. This is caused because <a href="https://hakibenita.com/sql-dos-and-donts#use-between-only-for-inclusive-ranges">the operator <code>BETWEEN</code> in inclusive</a>. To implement this condition without using <code>BETWEEN</code> you would have to do something like this:</p>
+<div class="highlight"><pre><span></span><span class="k">WITH</span> <span class="n">new_meetings</span> <span class="k">AS</span> <span class="p">(</span><span class="cm">/* ... */</span><span class="p">)</span>
+<span class="k">SELECT</span>
+    <span class="o">*</span>
+<span class="k">FROM</span>
+    <span class="n">meetings</span><span class="p">,</span> <span class="n">new_meetings</span>
+<span class="k">WHERE</span>
+    <span class="p">(</span><span class="n">new_meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="o">&gt;</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="k">AND</span> <span class="n">new_meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="o">&lt;</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">ends_at</span><span class="p">)</span>
+    <span class="k">OR</span>
+    <span class="p">(</span><span class="n">new_meetings</span><span class="mf">.</span><span class="n">ends_at</span> <span class="o">&gt;</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="k">AND</span> <span class="n">new_meetings</span><span class="mf">.</span><span class="n">ends_at</span> <span class="o">&lt;</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">ends_at</span><span class="p">)</span>
+    <span class="k">OR</span>
+    <span class="p">(</span><span class="n">meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="o">&gt;</span> <span class="n">new_meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="k">AND</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="o">&lt;</span> <span class="n">new_meetings</span><span class="mf">.</span><span class="n">ends_at</span><span class="p">)</span>
+    <span class="k">OR</span>
+    <span class="p">(</span><span class="n">meetings</span><span class="mf">.</span><span class="n">ends_at</span> <span class="o">&gt;</span> <span class="n">new_meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="k">AND</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">ends_at</span> <span class="o">&lt;</span> <span class="n">new_meetings</span><span class="mf">.</span><span class="n">ends_at</span><span class="p">)</span>
+    <span class="k">OR</span>
+    <span class="p">(</span><span class="n">meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="o">=</span> <span class="n">new_meetings</span><span class="mf">.</span><span class="n">starts_at</span> <span class="k">AND</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">ends_at</span> <span class="o">=</span> <span class="n">new_meetings</span><span class="mf">.</span><span class="n">ends_at</span><span class="p">);</span>
+
+<span class="go">       starts_at     │        ends_at      │ id │       starts_at     │        ends_at</span>
+<span class="go">─────────────────────┼─────────────────────┼────┼─────────────────────┼────────────────────</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ A  │ 2021-10-01 11:10:00 │ 2021-10-01 11:55:00</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ B  │ 2021-10-01 11:20:00 │ 2021-10-01 12:05:00</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ C  │ 2021-10-01 11:20:00 │ 2021-10-01 11:55:00</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ D  │ 2021-10-01 11:10:00 │ 2021-10-01 12:05:00</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ E  │ 2021-10-01 11:15:00 │ 2021-10-01 12:00:00</span>
+</pre></div>
+
+
+<p>The query correctly identifies scenarios <code>A</code> - <code>E</code> as overlaps, and does not identify the back-to-back scenarios <code>F</code> and <code>G</code> as overlaps. This is what you wanted. However, this condition is pretty crazy! It can easily get out of control.</p>
+<p>This is where the following operator in PostgreSQL proves itself as extremely valuable:</p>
+<div class="highlight"><pre><span></span><span class="k">WITH</span> <span class="n">new_meetings</span> <span class="k">AS</span> <span class="p">(</span>
+    <span class="k">SELECT</span>
+        <span class="n">id</span><span class="p">,</span>
+        <span class="n">starts_at</span><span class="o">::</span><span class="nb">timestamptz</span> <span class="k">as</span> <span class="n">starts_at</span><span class="p">,</span>
+        <span class="n">ends_at</span><span class="o">::</span><span class="nb">timestamptz</span> <span class="k">as</span> <span class="n">ends_at</span>
+    <span class="k">FROM</span> <span class="p">(</span><span class="k">VALUES</span>
+        <span class="p">(</span><span class="s1">'A'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:10 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:55 UTC'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'B'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:20 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 12:05 UTC'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'C'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:20 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:55 UTC'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'D'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:10 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 12:05 UTC'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'E'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:15 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 12:00 UTC'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'F'</span><span class="p">,</span> <span class="s1">'2021-10-01 12:00 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 12:10 UTC'</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">'G'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:00 UTC'</span><span class="p">,</span> <span class="s1">'2021-10-01 11:15 UTC'</span><span class="p">)</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">t</span><span class="p">(</span>
+        <span class="n">id</span><span class="p">,</span>   <span class="n">starts_at</span><span class="p">,</span>               <span class="n">ends_at</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="k">SELECT</span>
+    <span class="o">*</span>
+<span class="k">FROM</span>
+    <span class="n">meetings</span><span class="p">,</span> <span class="n">new_meetings</span>
+<span class="k">WHERE</span>
+<span class="hll">    <span class="p">(</span><span class="n">new_meetings</span><span class="mf">.</span><span class="n">starts_at</span><span class="p">,</span> <span class="n">new_meetings</span><span class="mf">.</span><span class="n">ends_at</span><span class="p">)</span>
+</span><span class="hll">        <span class="k">OVERLAPS</span> <span class="p">(</span><span class="n">meetings</span><span class="mf">.</span><span class="n">starts_at</span><span class="p">,</span> <span class="n">meetings</span><span class="mf">.</span><span class="n">ends_at</span><span class="p">);</span>
+</span>
+<span class="go">       starts_at     │        ends_at      │ id │       starts_at     │        ends_at</span>
+<span class="go">─────────────────────┼─────────────────────┼────┼─────────────────────┼────────────────────</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ A  │ 2021-10-01 11:10:00 │ 2021-10-01 11:55:00</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ B  │ 2021-10-01 11:20:00 │ 2021-10-01 12:05:00</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ C  │ 2021-10-01 11:20:00 │ 2021-10-01 11:55:00</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ D  │ 2021-10-01 11:10:00 │ 2021-10-01 12:05:00</span>
+<span class="go"> 2021-10-01 11:15:00 │ 2021-10-01 12:00:00 │ E  │ 2021-10-01 11:15:00 │ 2021-10-01 12:00:00</span>
+</pre></div>
+
+
+<p>This is it! Using the <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE" rel="noopener"><code>OVERLAPS</code> operator</a> you can replace those 5 complicated conditions, and keep the query short and simple to read and understand.</p>
+<hr>
+<p><em>UPDATES</em></p>
+<ul>
+<li>
+<p>2021-11-09: A <a href="https://www.reddit.com/r/programming/comments/qpj4cy/comment/hjwwqgi/?utm_source=share&amp;utm_medium=web2x&amp;context=3" rel="noopener">commenter on Reddit</a> spotted a mistake in the name of the psql parameter in the "Autocomplete Reserved Words in Uppercase" section. Fixed <code>COMP_KEYWORD_UPPER</code> to <code>COMP_KEYWORD_CASE</code>.</p>
+</li>
+<li>
+<p>2021-11-09: The example for <code>pg_sleep</code> was sleeping for 4 
+hours (14400 seconds) and not 4 minutes as was previously mentioned in 
+the article. The example was changed to better illustrate the benefit of
+ using an interval with <code>pg_sleep_for</code>.</p>
+</li>
+</ul>
+    </article>
+
+    <hr>
+<style>
+.subscribe {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.subscribe form {
+    max-width: 100%;
+    min-width: 0;
+}
+.subscribe__image {
+    margin-right: 1em;
+}
+.subscribe h5 {
+    line-height: var(--line-height-tight);
+    margin-bottom: 0.5em;
+}
+.subscribe__input {
+    display: flex;
+    border: 1px solid var(--brand-color);
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
+}
+.subscribe__input input {
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    border: 0;
+    border-radius: 0;
+    background-color: inherit;
+    padding: 0 1em;
+    line-height: 2.5;
+    min-width: 0;
+    max-width: 100%;
+    flex-grow: 1;
+}
+.subscribe__input input[type="email"] {
+    font-family: inherit;
+}
+.subscribe__input input[type="submit"] {
+    background-color: var(--brand-color);
+    color: var(--bg-color);
+    font-family: monospace;
+    font-weight: bold;
+}
+.subscribe__input input[type="submit"]:disabled {
+    opacity: 0.5;
+}
+@media only screen and (max-width: 380px) {
+    .subscribe__message br {
+        display: none;
+    }
+}
+</style>
+
+<section class="subscribe">
+    <div class="subscribe__image">
+        <img src="Lesser%20Known%20PostgreSQL%20Features%20Haki%20Benita_files/subscribe.png">
+    </div>
+    <form method="POST" action="https://mailer.hakibenita.com/subscribe" name="subscribe" validate="">
+        <h5 class="subscribe__message">Want me to send you an email <br> when I publish something new?</h5>
+        <input type="hidden" name="mailinglist" value="articles@hakibenita.com">
+        <input type="hidden" name="token" value="d38VSLEkO15jvpilOSZmATRc6iqEkQM0fyrSsRjmrok=">
+        <input type="hidden" name="redirecturl" value="https://hakibenita.com/subscribed">
+            <input type="hidden" name="article" value="Lesser Known PostgreSQL Features">
+            <input type="hidden" name="tag" value="PostgreSQL">
+        <div class="subscribe__input">
+            <input type="email" name="email" placeholder="your@email.com" required="">
+            <input type="submit" value="YES!">
+        </div>
+    </form>
+    <script>
+        (function(document) {
+            document.querySelector('form[name=subscribe]').addEventListener('submit', function(e) {
+                e.target.querySelector('input[type=submit]').disabled = true;
+            });
+        })(document);
+    </script>
+</section>
+    <hr>
+    <section class="share">
+        <h5>Share to show you care</h5>
+
+<ul class="share-icons">
+    <li>
+        <a href="mailto:?subject=Lesser%20Known%20PostgreSQL%20Features%20by%20Haki%20Benita&amp;body=https%3A//hakibenita.com/postgresql-unknown-features" title="Email">
+            <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <title>Email</title>
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a href="https://twitter.com/intent/tweet/?text=Lesser%20Known%20PostgreSQL%20Features%20by%20Haki%20Benita&amp;url=https%3A//hakibenita.com/postgresql-unknown-features&amp;via=be_haki&amp;hashtags=PostgreSQL" target="_blank" title="Twitter" aria-label="share via twitter">
+            <svg role="img" viewBox="0 0 24 24" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                <title>Twitter</title>
+                <path d="M23.954 4.569c-.885.389-1.83.654-2.825.775 1.014-.611 1.794-1.574 2.163-2.723-.951.555-2.005.959-3.127 1.184-.896-.959-2.173-1.559-3.591-1.559-2.717 0-4.92 2.203-4.92 4.917 0 .39.045.765.127 1.124C7.691 8.094 4.066 6.13 1.64 3.161c-.427.722-.666 1.561-.666 2.475 0 1.71.87 3.213 2.188 4.096-.807-.026-1.566-.248-2.228-.616v.061c0 2.385 1.693 4.374 3.946 4.827-.413.111-.849.171-1.296.171-.314 0-.615-.03-.916-.086.631 1.953 2.445 3.377 4.604 3.417-1.68 1.319-3.809 2.105-6.102 2.105-.39 0-.779-.023-1.17-.067 2.189 1.394 4.768 2.209 7.557 2.209 9.054 0 13.999-7.496 13.999-13.986 0-.209 0-.42-.015-.63.961-.689 1.8-1.56 2.46-2.548l-.047-.02z"></path>
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a href="https://facebook.com/sharer/sharer.php?u=https%3A//hakibenita.com/postgresql-unknown-features" target="_blank" title="Facebook" aria-label="Share on Facebook">
+            <svg role="img" viewBox="0 0 24 24" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                <title>Facebook</title>
+                <path d="M22.676 0H1.324C.593 0 0 .593 0 1.324v21.352C0 23.408.593 24 1.324 24h11.494v-9.294H9.689v-3.621h3.129V8.41c0-3.099 1.894-4.785 4.659-4.785 1.325 0 2.464.097 2.796.141v3.24h-1.921c-1.5 0-1.792.721-1.792 1.771v2.311h3.584l-.465 3.63H16.56V24h6.115c.733 0 1.325-.592 1.325-1.324V1.324C24 .593 23.408 0 22.676 0"></path>
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a href="https://www.reddit.com/submit?url=https%3A//hakibenita.com/postgresql-unknown-features&amp;title=Lesser%20Known%20PostgreSQL%20Features%20by%20Haki%20Benita" target="_blank" title="Reddit" aria-label="Submit to Reddit">
+            <svg role="img" viewBox="0 0 24 24" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                <title>Reddit</title>
+                <path d="M2.204 14.049c-.06.276-.091.56-.091.847 0 3.443 4.402 6.249 9.814 6.249 5.41 0 9.812-2.804 9.812-6.249 0-.274-.029-.546-.082-.809l-.015-.032c-.021-.055-.029-.11-.029-.165-.302-1.175-1.117-2.241-2.296-3.103-.045-.016-.088-.039-.126-.07-.026-.02-.045-.042-.067-.064-1.792-1.234-4.356-2.008-7.196-2.008-2.815 0-5.354.759-7.146 1.971-.014.018-.029.033-.049.049-.039.033-.084.06-.13.075-1.206.862-2.042 1.937-2.354 3.123 0 .058-.014.114-.037.171l-.008.015zm9.773 5.441c-1.794 0-3.057-.389-3.863-1.197-.173-.174-.173-.457 0-.632.176-.165.46-.165.635 0 .63.629 1.685.943 3.228.943 1.542 0 2.591-.3 3.219-.929.165-.164.45-.164.629 0 .165.18.165.465 0 .645-.809.808-2.065 1.198-3.862 1.198l.014-.028zm-3.606-7.573c-.914 0-1.677.765-1.677 1.677 0 .91.763 1.65 1.677 1.65s1.651-.74 1.651-1.65c0-.912-.739-1.677-1.651-1.677zm7.233 0c-.914 0-1.678.765-1.678 1.677 0 .91.764 1.65 1.678 1.65s1.651-.74 1.651-1.65c0-.912-.739-1.677-1.651-1.677zm4.548-1.595c1.037.833 1.8 1.821 2.189 2.904.45-.336.719-.864.719-1.449 0-1.002-.815-1.816-1.818-1.816-.399 0-.778.129-1.09.363v-.002zM2.711 9.963c-1.003 0-1.817.816-1.817 1.818 0 .543.239 1.048.644 1.389.401-1.079 1.172-2.053 2.213-2.876-.302-.21-.663-.329-1.039-.329v-.002zm9.217 12.079c-5.906 0-10.709-3.205-10.709-7.142 0-.275.023-.544.068-.809C.494 13.598 0 12.729 0 11.777c0-1.496 1.227-2.713 2.725-2.713.674 0 1.303.246 1.797.682 1.856-1.191 4.357-1.941 7.112-1.992l1.812-5.524.404.095s.016 0 .016.002l4.223.993c.344-.798 1.138-1.36 2.065-1.36 1.229 0 2.231 1.004 2.231 2.234 0 1.232-1.003 2.234-2.231 2.234s-2.23-1.004-2.23-2.23l-3.851-.912-1.467 4.477c2.65.105 5.047.854 6.844 2.021.494-.464 1.144-.719 1.833-.719 1.498 0 2.718 1.213 2.718 2.711 0 .987-.54 1.886-1.378 2.365.029.255.059.494.059.749-.015 3.938-4.806 7.143-10.72 7.143l-.034.009zm8.179-19.187c-.74 0-1.34.599-1.34 1.338 0 .738.6 1.34 1.34 1.34.732 0 1.33-.6 1.33-1.334 0-.733-.598-1.332-1.347-1.332l.017-.012z"></path>
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a style="display: none;" href="#" data-share="Lesser Known PostgreSQL Features by Haki Benita" data-share-url="postgresql-unknown-features" title="Native">
+            <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" xmlns="http://www.w3.org/2000/svg">
+                <title>Share</title>
+                <circle fill="currentColor" cx="18" cy="5" r="3"></circle>
+                <circle fill="currentColor" cx="6" cy="12" r="3"></circle>
+                <circle fill="currentColor" cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+        </a>
+    </li>
+</ul>
+
+
+<script>
+(function(window, document) {
+    navigator.share && document.addEventListener('DOMContentLoaded', () => {
+        const share = document.querySelector('[data-share]');
+        share.style.display = 'inherit';
+        share.addEventListener('click', e => {
+            e.preventDefault();
+            navigator.share({
+                title: share.getAttribute('data-share'),
+                url: share.getAttribute('data-share-url'),
+            }).then(() => console.info('shared!'));
+        });
+    });
+    [].forEach.call(document.querySelectorAll('.share-icons a[title]'), link => {
+        link.addEventListener('click', () => {
+            ga('send', 'social', link.title, 'share', window.location.href);
+            ga('send', 'event', 'share', link.title, window.location.href, 1);
+        });
+    });
+})(window, document);
+</script>    </section>
+
+    <hr>
+    <section class="admonition tip">
+        <h4 class="admonition-title">Similar articles</h4>
+        <ul class="similar_posts">
+            <li>
+<ul class="article__info">
+    <li>
+        <time class="published" datetime="2021-04-26">26 April 2021</time>
+    </li>
+
+    <li>
+        <a class="tag" href="https://hakibenita.com/tag/postgresql">PostgreSQL</a>,         <a class="tag" href="https://hakibenita.com/tag/sql">SQL</a>    </li>
+</ul>                <a href="https://hakibenita.com/sql-for-data-analysis">
+                    <h4>Practical SQL for Data Analysis</h4>
+                    <p>What you can do without Pandas</p>
+                </a>
+            </li>
+            <li>
+<ul class="article__info">
+    <li>
+        <time class="published" datetime="2022-10-06">06 October 2022</time>
+    </li>
+
+    <li>
+        <a class="tag" href="https://hakibenita.com/tag/sql">SQL</a>,         <a class="tag" href="https://hakibenita.com/tag/postgresql">PostgreSQL</a>    </li>
+</ul>                <a href="https://hakibenita.com/future-proof-sql">
+                    <h4>Future Proofing SQL with Carefully Placed Errors</h4>
+                    <p>How to fail loudly when you really should</p>
+                </a>
+            </li>
+            <li>
+<ul class="article__info">
+    <li>
+        <time class="published" datetime="2019-08-13">13 August 2019</time>
+    </li>
+
+    <li>
+        <a class="tag" href="https://hakibenita.com/tag/postgresql">PostgreSQL</a>,         <a class="tag" href="https://hakibenita.com/tag/sql">SQL</a>    </li>
+</ul>                <a href="https://hakibenita.com/sql-group-by-first-last-value">
+                    <h4>How to Get the First or Last Value in a Group Using Group By in SQL</h4>
+                    <p>A neat little trick using arrays in PostgreSQL</p>
+                </a>
+            </li>
+            <li>
+<ul class="article__info">
+    <li>
+        <time class="published" datetime="2017-05-11">11 May 2017</time>
+    </li>
+
+    <li>
+        <a class="tag" href="https://hakibenita.com/tag/postgresql">PostgreSQL</a>,         <a class="tag" href="https://hakibenita.com/tag/sql">SQL</a>    </li>
+</ul>                <a href="https://hakibenita.com/the-many-faces-of-distinct-in-postgre-sql">
+                    <h4>The Many Faces of DISTINCT in PostgreSQL</h4>
+                    <p>3 interesting uses of DISTINCT in PostgreSQL</p>
+                </a>
+            </li>
+            <li>
+<ul class="article__info">
+    <li>
+        <time class="published" datetime="2021-12-31">31 December 2021</time>
+    </li>
+
+    <li>
+        <a class="tag" href="https://hakibenita.com/tag/meta">Meta</a>    </li>
+</ul>                <a href="https://hakibenita.com/2021-year-in-review">
+                    <h4>2021 Year in Review</h4>
+                    <p>What I've been up to this year...</p>
+                </a>
+            </li>
+        </ul>
+    </section>
+
+</div>
+
+<script>
+(function(window, document) {
+    const progressIndicatorForElement = document.querySelector('[data-progress-indicator]');
+    if (!progressIndicatorForElement) {
+        return;
+    }
+
+    const progressElement = document.createElement('div');
+    progressElement.setAttribute('role', 'presentation');
+    progressElement.classList.add('progress-indicator');
+
+    // Initial position.
+    progressElement.style.left = "-100%";
+    progressElement.style.transform = "translateX(-100%)";
+
+    document.body.appendChild(progressElement);
+
+    let lastKnownScrollPosition = 0;
+    let ticking = false;
+
+    window.addEventListener('scroll', function(e) {
+        lastKnownScrollPosition = window.scrollY;
+        if (ticking) {
+            return;
+        }
+        window.requestAnimationFrame(function() {
+            var offset = Math.min(100, lastKnownScrollPosition / (progressIndicatorForElement.scrollHeight - window.innerHeight) * 100);
+            progressElement.style.transform = `translateX(${offset}%)`;
+            ticking = false;
+        });
+        ticking = true;
+    });
+})(window, document);
+</script>
+
+<script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://hakibenita.com/postgresql-unknown-features"
+    },
+    "headline": "Lesser Known PostgreSQL Features",
+    "description": "A list of useful features you already have, but may not know about! In this article I share lesser known features of PostgreSQL.",
+    "datePublished": "2021-11-08",
+    "dateModified": "2021-11-08",
+    "author": {
+        "@type": "Person",
+        "name": "Haki Benita"
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "Haki Benita",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://hakibenita.com/images/favicon-32x32.png"
+        }
+    },
+    "image": [
+            "https://hakibenita.com/images/00-postgresql-unknown-features.png",
+        "https://hakibenita.com/images/favicon-32x32.png"
+    ]
+}
+</script>
+
+    </main><div role="presentation" class="progress-indicator" style="left: -100%; transform: translateX(-100%);"></div>
+
+    <footer>
+        <ul>
+            <li style="white-space:nowrap;">© Haki Benita 2016-2022</li>
+            <li><a href="https://hakibenita.com/pages/credits">Credits</a></li>
+            <li><a href="https://hakibenita.com/pages/appreciate">Appreciate</a></li>
+        </ul>
+    </footer>
+
+</body></html>

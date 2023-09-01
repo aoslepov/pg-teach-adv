@@ -1,0 +1,625 @@
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/theme/fonts/Inter/Inter-Regular.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('/theme/fonts/Inter/Inter-Bold.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url('/theme/fonts/Inter/Inter-Black.ttf') format('truetype');
+}
+
+:root {
+    --text-color: #010101;
+    --stable-color: #747474;
+    --brand-color: #F41D92;
+    --light-color: #f2f2f2;
+    --bg-color: #FDFDFD;
+    --bg-color-rgb: 253, 253, 253;
+    --highlight-color: yellow;
+    --content-width: 54rem;
+    --line-height: 1.5;
+    --line-height-tight: 1.1;
+    --negative: #D30101;
+    --positive: #51950F;
+
+    --serif-font: Palatino, Garamond, Bookman, "Avant Garde", serif;
+    --sans-serif-font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+.dark:root {
+    --text-color: #fffffe;
+    --stable-color: #94a1b2;
+    --light-color: #010101;
+    --bg-color: #16161a;
+    --bg-color-rgb: 22, 22, 26;
+}
+.dark .dark--invert {
+    /* Use to invert image color whn dark mode is activated */
+    filter: invert(1);
+}
+
+/* Resets */
+
+* {
+    padding:  0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    font-size: 1em;
+    line-height: var(--line-height);
+    font-family: var(--sans-serif-font);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    color: var(--text-color);
+    background: var(--bg-color);
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+
+img, svg {
+    max-width: 100%;
+    display: block;
+    margin: 0 auto;
+}
+
+a, a:visited {
+    color: inherit;
+}
+a:hover, a:focus {
+    color: var(--brand-color);
+}
+
+h1 {
+    font-size: 2.369rem;
+    margin-top: calc(var(--line-height) * 1rem);
+    font-weight: 900;
+}
+h2 {
+    font-size: 1.777rem;
+    font-weight: bold;
+}
+h3 {
+    font-size: 1.333rem;
+    margin-top: calc(var(--line-height) * 1rem);
+    font-weight: bold;
+}
+h4 {
+    font-size: 1rem;
+    margin-top: calc(var(--line-height) * 1rem);
+}
+h5 {
+    font-size: 1rem;
+}
+
+p, ul, ol, table, figure, .admonition {
+    margin-bottom: calc(var(--line-height) * 1rem);
+}
+ul ol, ol ul, ol ol, ul ul {
+    /* Remove padding from non top level lists (e.g nested lists). */
+    margin-bottom: 0;
+}
+
+hr {
+    margin: 2em 0;
+    border: 0;
+}
+hr:after {
+    content: "...";
+    text-align: center;
+    display: block;
+    letter-spacing: 0.6em;
+}
+hr + * {
+    margin-top: 0;
+}
+
+blockquote {
+    font-style: italic;
+    border-left: 2px solid;
+    padding-left: 1em;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+thead th {
+    text-align: inherit;
+    text-transform: uppercase;
+    color: var(--stable-color);
+    background-color: var(--light-color);
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+td, th {
+    padding: 0.25rem 0.5rem;
+    border-bottom: 1px solid var(--light-color);
+    overflow: hidden;
+}
+
+input {
+    color: inherit;
+}
+input::placeholder {
+    color: var(--stable-color);
+}
+
+[id] {
+    /* Add some top margin when scrolling to anchor links */
+    scroll-margin-top: 1ex;
+}
+
+/* Layout */
+
+nav, main, footer {
+    max-width: var(--content-width);
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Push footer to the bottom. */
+@supports (display: grid) {
+    body {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        grid-template-columns: 100%;
+    }
+}
+
+
+/* Nav */
+
+nav {
+    display: flex;
+    border-bottom: 1px solid var(--light-color);
+    padding: 0 0.5em;
+}
+nav > *:first-child {
+    flex-grow: 1;
+    margin: 0;
+}
+nav a, nav button {
+    font-size: 1rem;
+    display: block;
+    text-align: initial;
+    padding: 1em 0.5em;
+    text-decoration: none;
+    color: inherit;
+    white-space: nowrap;
+    text-transform: capitalize;
+    font-weight: 900;
+}
+nav ul {
+    list-style: none;
+    margin: 0;
+}
+nav ul li {
+    display: inline-block;
+}
+
+.toggle-theme {
+    border: 0;
+    background: transparent;
+    background-image: none;
+    padding: 0 0.5em;
+    color: var(--text-color);
+    cursor: pointer;
+    position: relative;
+}
+.toggle-theme:hover, .toggle-theme:focus {
+    color: var(--brand-color);
+}
+.toggle-theme .icon-sun {
+    display: none;
+}
+.toggle-theme .icon-moon {
+    position: relative;
+    top: 0.125em;
+}
+.dark .toggle-theme .icon-moon {
+    display: none;
+}
+.dark .toggle-theme .icon-sun {
+    display: block;
+}
+.nojs .toggle-theme {
+    display: none;
+}
+
+
+/* Main */
+
+main {
+    padding: 1rem;
+}
+
+.article__info {
+    list-style: none;
+    color: var(--stable-color);
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1px;
+    font-size: 0.7em;
+    font-family: var(--sans-serif-font);
+    margin: 0;
+}
+.article__info > li {
+    display: inline;
+}
+.article__info > li:not(:last-child):after {
+    content: "/";
+    margin: 0 0.25em;
+}
+.article__info a {
+    text-decoration: none;
+}
+
+.article__header {
+    margin-top: 1em;
+}
+.article__header a {
+    text-decoration: none;
+}
+.article__header h1 {
+    margin: 0;
+    line-height: var(--line-height-tight);
+}
+.article__header h1 + h2 {
+    line-height: var(--line-height-tight);
+    color: var(--stable-color);
+    font-weight: normal;
+    margin: 0;
+}
+
+.article__content ul, .article__content ol {
+    margin-left: 1em;
+}
+.article__content {
+    margin-top: 1em;
+}
+
+figure p {
+    /* Using the including plugin, when including
+    an svg image inside a figure element, markdown
+    adds a <p> tag with margin, disable it. */
+    margin: 0;
+}
+figcaption {
+    font-style: normal;
+    color: var(--stable-color);
+    font-size: 0.8rem;
+    text-align: center;
+    display: block;
+}
+
+.paginator {
+    margin: 0;
+    padding-top: 1em;
+    border-top: 1px solid var(--light-color);
+    text-align: center;
+    white-space: nowrap;
+    overflow-x: hidden;
+}
+.paginator a {
+    text-decoration: none;
+    color: var(--stable-color);
+    line-height: 2.5em;
+    font-weight: bold;
+    text-align: center;
+    display: inline-block;
+    width: 2.5em;
+}
+.paginator__pages a {
+    font-size: 0.8rem;
+}
+.paginator__pages a:after {
+    content:" ";
+    width: 1em;
+}
+/* Current page. */
+.paginator__pages a[href="#"] {
+    background: var(--light-color);
+}
+.paginator__pages a:hover {
+    background-color: var(--brand-color);
+}
+
+
+/* Code */
+
+.highlight {
+    margin-bottom: calc(var(--line-height) * 1rem);
+    position: relative;
+}
+.highlight pre {
+    max-width: var(--content-width);
+    overflow-x: auto;
+    padding: calc(var(--line-height) * 1rem);
+    background-color: var(--light-color);
+    /* Account for content padding */
+    margin: 0 -1rem;
+    /* Account for differences in font size */
+    font-size: 1.1em;
+}
+/* Desktop */
+@media screen and (min-width: 52rem) {
+    .highlight pre {
+        box-shadow: 4px 4px 0 rgba(0,0,0,0.1);
+        border: 1px solid rgba(0,0,0,0.05);
+        margin: 0;
+    }
+}
+.dont .highlight pre, .do .highlight pre {
+    border-top-width: 1px;
+    border-top-style: solid;
+}
+.dont .highlight::after, .do .highlight::after {
+    position: absolute;
+    top: 0;
+    left: 1em;
+    transform: translateY(-50%);
+    padding: 0.25em 1em;
+    font-weight: bold;
+    font-family: monospace;
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+}
+.dont .highlight::after { content: "✖️ DONT"; background-color:var(--negative); color: white; }
+.dont .highlight pre { border-color: var(--negative); }
+
+.do   .highlight::after { content: "✔️ DO"; background-color:var(--positive); color: white; }
+.do   .highlight pre { border-color: var(--positive); }
+
+
+/* Keyboard */
+kbd {
+    font-weight: bold;
+    padding: 0.1em 0.25em;
+    box-shadow: 1px 1px 0px var(--stable-color);
+    border: 1px solid var(--stable-color);
+    border-radius: 0.2em;
+}
+
+/* Progress Indicator */
+
+.progress-indicator {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 10;
+    height: 3px;
+    opacity: 0.8;
+    background-color: var(--brand-color);
+    background: linear-gradient(
+        to left,
+        var(--brand-color),
+        var(--highlight-color)
+    );
+}
+
+
+/* Index */
+
+#post-list {
+    list-style: none;
+}
+#post-list > li:not(:last-child) {
+    border-bottom: 1px solid var(--light-color);
+}
+#post-list h2 {
+    font-size: 1.333rem;
+}
+
+
+/* Archives */
+
+dl dt {
+    font-size: 0.8rem;
+    color: var(--stable-color);
+    margin-top: 1rem;
+}
+
+
+/* Footer */
+
+footer {
+    padding: 0 0.5em;
+    border-top: 1px solid var(--light-color);
+    color: var(--stable-color);
+    font-size: 0.8rem;
+    font-family: var(--sans-serif-font);
+    text-transform: uppercase;
+    font-weight: bold;
+    display: flex;
+}
+footer ul {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+}
+footer li {
+    padding: 1em 0.5em;
+}
+
+
+/* Admonition (classes set by markdown plugin) */
+
+.admonition {
+    --admonition-color: var(--stable-color);
+    --admonition-title-color: var(--bg-color);
+    --admonition-border-color: var(--stable-color);
+}
+.admonition.warning  {
+    --admonition-color: var(--highlight-color);
+    --admonition-title-color: var(--text-color);
+}
+.admonition.tip {
+    --admonition-color: var(--brand-color);
+    --admonition-border-color: var(--brand-color);
+}
+
+.admonition {
+    padding: 1em;
+    position: relative;
+    border: 1px solid var(--admonition-border-color);
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
+}
+.admonition p:last-child {
+    margin: 0;
+}
+.admonition .admonition-title {
+    margin: 0;
+
+    color: var(--admonition-title-color);
+    background-color: var(--admonition-color);
+
+    font-weight: 900;
+    font-size: 0.8rem;
+    font-family: monospace;
+    text-transform: uppercase;
+
+    position: absolute;
+    top: 0px;
+    transform: translateY(-50%);
+
+    padding: 0 1rem;
+}
+
+
+/* TOC */
+
+details.toc-container {
+    border: 1px solid var(--stable-color);
+    background-color: var(--light-color);
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
+}
+details.toc-container > p {
+    /* markdown adds this. */
+    display: none;
+}
+details.toc-container summary {
+    padding: 0.5em;
+    font-weight: bold;
+    cursor: pointer;
+}
+.toc > ul {
+    margin-bottom: 0;
+}
+.toc {
+    padding: 1em;
+}
+.toc a {
+    display: block;
+}
+.toclink {
+    text-decoration: none;
+}
+
+/* Headers */
+
+h1, h2, h3, h4, h5, h6 {
+    position: relative;
+}
+*:hover > .headerlink, .headerlink:focus {
+    opacity: 1;
+    transform: translate(0, -50%);
+}
+
+
+/* Similar posts */
+
+.similar_posts {
+    list-style: none;
+    list-style-position: inside;
+    margin: 0;
+    line-height: var(--line-height-tight);
+}
+.similar_posts h4 {
+    margin: 0.25em 0;
+}
+.similar_posts a {
+    text-decoration: none;
+}
+.similar_posts > li {
+    padding-top: 1em;
+}
+.similar_posts > li:not(:last-child) {
+    border-bottom: 1px solid var(--light-color);
+    padding-bottom: 1em;
+}
+
+
+
+/* Share */
+
+.share {
+    text-align: center;
+}
+.share-icons {
+    list-style: none;
+    font-size: 1.5em;
+}
+.share-icons li {
+    display: inline-block;
+}
+.share-icons a {
+    text-decoration: none;
+    padding: 0 0.2em;
+}
+
+
+/* Table */
+
+@media screen and (max-width: 45em) {
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+}
+
+
+/* Announcement */
+.announcement {
+    background: linear-gradient(to bottom right, var(--brand-color), yellow);
+    border-radius: 0.25em;
+    box-shadow: -1px -1px 0 var(--light-color);
+    padding: 0.25em; /* This is the border width */
+}
+.announcement__body {
+    padding: 1em;
+    border-radius: inherit;
+    box-shadow: inset -1px -1px rgba(0, 0, 0, 0.3);
+    background-color: rgba(var(--bg-color-rgb), 0.5);
+}
+.announcement__body p {
+    margin-bottom: 0.5em;
+}
+.announcement__body ul {
+    margin-bottom: 0.5em;
+    margin-left: 1em;
+}
+.announcement__body ul li {
+    margin-top: 0.5em;
+}
+.announcement__body > *:last-child {
+    margin-bottom: 0;
+}

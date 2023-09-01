@@ -1,0 +1,258 @@
+.highlight {
+    --gallery: yellow;
+    --smalt_blue: #408090;
+    --red: #ff0000;
+    --camarone: #007020;
+    --storm_dust: #666666;
+    --forget_me_not: #fff0f0;
+    --black: var(--text-color, black);
+    --pippin: #ffdddd;
+    --navy_blue: #000080;
+    --snowy_mint: #ddffdd;
+    --mine_shaft: var(--text-color, #303030);
+    --red_stage: #c65d09;
+    --seance: #800080;
+    --persian_blue: #0040d0;
+    --totem_pole: #902000;
+    --eucalyptus: #208050;
+    --san_marino: #4070a0;
+    --deep_cerulean: #0e84b5;
+    --shakespeare: #60add5;
+    --fuscous_gray: #555555;
+    --flame_pea: #d55537;
+    --catalina_blue: #06287e;
+    --deep_sapphire: #002070;
+    --fuchsia_pink: #bb60d5;
+    --pink_swan: #bbbbbb;
+    --danube: #70a0d0;
+    --blumine: #235388;
+    --fern_frond: #517918;
+}
+
+.dark .highlight {
+    --gallery: #ffff0077;
+    --pippin: #902000;
+    --snowy_mint: #20805080;
+    --navy_blue: #0040d0;
+	--san_marino: #619fdd;
+	--catalina_blue: #619FDD;
+	--smalt_blue: var(--stable-color);
+	--camarone: #007020;
+}
+
+.hll {
+	background-color: #f4f4a1;
+	/* Add outline to compensate for line height */
+	outline: 0.25em solid #f4f4a1;
+	/* It's hard to highlight on a dark background, so use
+	text shadow to make the highlighted text easier to read. */
+	text-shadow: 1px 0px var(--light-color);
+}
+.dark .hll {
+	background-color: #303018;
+	outline: 0.25em solid #303018;
+}
+.c {
+	color: var(--smalt_blue);
+	font-style: italic;
+}
+.err {
+	border: 1px solid var(--red);
+}
+.k {
+	color: var(--camarone);
+	font-weight: bold;
+}
+.o {
+	color: var(--storm_dust);
+}
+.cm {
+	color: var(--smalt_blue);
+	font-style: italic;
+}
+.cp {
+	color: var(--camarone);
+}
+.c1 {
+	color: var(--smalt_blue);
+	font-style: italic;
+}
+.cs {
+	background-color: var(--forget_me_not);
+	color: var(--smalt_blue);
+}
+.gd {
+	color: var(--black);
+	background-color: var(--pippin);
+}
+.ge {
+	font-style: italic;
+}
+.gr {
+	color: var(--red);
+}
+.gh {
+	color: var(--navy_blue);
+	font-weight: bold;
+}
+.gi {
+	color: var(--black);
+	background-color: var(--snowy_mint);
+}
+.go {
+	color: var(--mine_shaft);
+}
+.gp {
+	color: var(--red_stage);
+	font-weight: bold;
+}
+.gs {
+	font-weight: bold;
+}
+.gu {
+	color: var(--seance);
+	font-weight: bold;
+}
+.gt {
+	color: var(--persian_blue);
+}
+.kc {
+	color: var(--camarone);
+	font-weight: bold;
+}
+.kd {
+	color: var(--camarone);
+	font-weight: bold;
+}
+.kn {
+	color: var(--camarone);
+	font-weight: bold;
+}
+.kp {
+	color: var(--camarone);
+}
+.kr {
+	color: var(--camarone);
+	font-weight: bold;
+}
+.kt {
+	color: var(--totem_pole);
+}
+.m {
+	color: var(--eucalyptus);
+}
+.s {
+	color: var(--san_marino);
+}
+.na {
+	color: var(--san_marino);
+}
+.nb {
+	color: var(--camarone);
+}
+.nc {
+	color: var(--deep_cerulean);
+	font-weight: bold;
+}
+.no {
+	color: var(--shakespeare);
+}
+.nd {
+	color: var(--fuscous_gray);
+	font-weight: bold;
+}
+.ni {
+	color: var(--flame_pea);
+	font-weight: bold;
+}
+.ne {
+	color: var(--camarone);
+}
+.nf {
+	color: var(--catalina_blue);
+}
+.nl {
+	color: var(--deep_sapphire);
+	font-weight: bold;
+}
+.nn {
+	color: var(--deep_cerulean);
+	font-weight: bold;
+}
+.nt {
+	color: var(--catalina_blue);
+	font-weight: bold;
+}
+.nv {
+	color: var(--fuchsia_pink);
+}
+.ow {
+	color: var(--camarone);
+	font-weight: bold;
+}
+.w {
+	color: var(--pink_swan);
+}
+.mf {
+	color: var(--eucalyptus);
+}
+.mh {
+	color: var(--eucalyptus);
+}
+.mi {
+	color: var(--eucalyptus);
+}
+.mo {
+	color: var(--eucalyptus);
+}
+.sb {
+	color: var(--san_marino);
+}
+.sc {
+	color: var(--san_marino);
+}
+.sd {
+	color: var(--san_marino);
+	font-style: italic;
+}
+.s2 {
+	color: var(--san_marino);
+}
+.se {
+	color: var(--san_marino);
+	font-weight: bold;
+}
+.sh {
+	color: var(--san_marino);
+}
+.si {
+	color: var(--danube);
+	font-style: italic;
+}
+.sx {
+	color: var(--red_stage);
+}
+.sr {
+	color: var(--blumine);
+}
+.s1 {
+	color: var(--san_marino);
+}
+.ss {
+	color: var(--fern_frond);
+}
+.bp {
+	color: var(--camarone);
+}
+.vc {
+	color: var(--fuchsia_pink);
+}
+.vg {
+	color: var(--fuchsia_pink);
+}
+.vi {
+	color: var(--fuchsia_pink);
+}
+.il {
+	color: var(--eucalyptus);
+}
