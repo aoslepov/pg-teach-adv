@@ -135,3 +135,6 @@ pg_ctlcluster 15 main2 start
 
 
 gcloud compute instances delete postgres
+
+
+https://wal-g.readthedocs.io/STORAGES/
