@@ -6,8 +6,8 @@ restapi:
     listen: SED_CURRENT_ADDRESS:8008 # адрес той ноды, в которой находится этот файл
     connect_address: SED_CURRENT_ADDRESS:8008 # адрес той ноды, в которой находится этот файл
 
-consul:
-    hosts: 127.0.0.1:8301
+etcd:
+    hosts: etcd-01:2379,etcd-02:2379,etcd-03:2379
 
 # this section (bootstrap) will be written into Etcd:/<namespace>/<scope>/config after initializing new cluster
 # and all other cluster members will use it as a `global configuration`
