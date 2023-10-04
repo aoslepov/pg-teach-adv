@@ -1,6 +1,6 @@
 scope: pgteachcluster # должно быть одинаковым на всех нодах
 namespace: /cluster/ # должно быть одинаковым на всех нодах
-name: {{ansible_hostname}} # должно быть разным на всех нодах
+name: SED_CURRENT_HOSTNAME # должно быть разным на всех нодах
 
 restapi:
     listen: SED_CURRENT_ADDRESS:8008 # адрес той ноды, в которой находится этот файл
