@@ -156,8 +156,8 @@ kubectl expose deployment postgres-operator-ui --type=LoadBalancer --name=pg-ui
 ```
 
 Заходим на ардес/порт pg-ui и создаём новый кластер http://84.201.140.19:8081/#new  
-![zelando-1.png](lesson11/zelando-1.png)
-![zelando-2.png](lesson11/zelando-2.png)
+![zelando-1.png](https://github.com/aoslepov/pg-teach-adv/blob/main/lesson11/zelando-1.png)
+![zelando-2.png](https://github.com/aoslepov/pg-teach-adv/blob/main/lesson11/zelando-2.png)
 
 Проверяем развёртывание  
 ```
