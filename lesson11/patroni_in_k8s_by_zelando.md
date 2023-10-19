@@ -48,7 +48,7 @@ sudo apt install postgresql-client
 ```
 
 Подключаем kubctl к облаку  
-````
+```
 yc managed-kubernetes cluster get-credentials k8s-pg --external
 
 root@pg-teach-01:/usr/local/sbin# kubectl api-resources
