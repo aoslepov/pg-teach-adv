@@ -91,7 +91,7 @@ WantedBy = multi-user.target
 
 ---
 
-### Создаём ноду для мастера pg-teach-01
+#### Создаём ноду для мастера pg-teach-01
 
 ```
 yc compute instance create \
