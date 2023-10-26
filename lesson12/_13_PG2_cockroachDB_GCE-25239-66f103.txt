@@ -1,0 +1,142 @@
+-- cockroachDB in GCE
+-- Создал 3 VM - cockroach1, cockroach2, cockroach3
+gcloud beta compute --project=celtic-house-266612 instances create cockroach1 --zone=us-central1-a --machine-type=e2-medium --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=933982307116-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --image-family=ubuntu-2004-lts --image-project=ubuntu-os-cloud --boot-disk-size=50GB --boot-disk-type=pd-ssd --boot-disk-device-name=cockroach1 --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any
+gcloud beta compute --project=celtic-house-266612 instances create cockroach2 --zone=us-central1-a --machine-type=e2-medium --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=933982307116-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --image-family=ubuntu-2004-lts --image-project=ubuntu-os-cloud --boot-disk-size=50GB --boot-disk-type=pd-ssd --boot-disk-device-name=cockroach2 --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any
+gcloud beta compute --project=celtic-house-266612 instances create cockroach3 --zone=us-central1-a --machine-type=e2-medium --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=933982307116-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --image-family=ubuntu-2004-lts --image-project=ubuntu-os-cloud --boot-disk-size=50GB --boot-disk-type=pd-ssd --boot-disk-device-name=cockroach3 --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any
+
+gcloud compute ssh cockroach1
+gcloud compute ssh cockroach2
+gcloud compute ssh cockroach3
+
+-- https://www.cockroachlabs.com/get-started-cockroachdb/
+-- 21.1.6 stable
+-- на всех нодах
+wget -qO- https://binaries.cockroachdb.com/cockroach-v21.1.6.linux-amd64.tgz | tar  xvz && sudo cp -i cockroach-v21.1.6.linux-amd64/cockroach /usr/local/bin/ && sudo mkdir -p /opt/cockroach && sudo chown aeugene:aeugene /opt/cockroach
+
+-- стартуем ноды
+-- --insecure OR genere certs
+mkdir certs my-safe-directory
+cockroach cert create-ca --certs-dir=certs --ca-key=my-safe-directory/ca.key
+-- сразу генерим сертификат на 4 ноды
+cockroach cert create-node localhost cockroach1 cockroach2 cockroach3 cockroach4 --certs-dir=certs --ca-key=my-safe-directory/ca.key --overwrite
+cockroach cert create-client root --certs-dir=certs --ca-key=my-safe-directory/ca.key
+
+cockroach cert list --certs-dir=certs
+
+-- on notebook
+cd /mnt/c/download
+mkdir certs
+scp -r aeugene@34.68.146.225:/home/aeugene/certs /mnt/c/download
+scp -r /mnt/c/download/certs aeugene@34.136.146.131:/home/aeugene
+scp -r /mnt/c/download/certs aeugene@104.154.106.144:/home/aeugene
+
+-- чтобы не мучаться
+-- https://www.digitalocean.com/community/tutorials/how-to-set-up-an-nfs-mount-on-ubuntu-20-04-ru
+
+
+-- on node1
+cockroach start --certs-dir=certs --advertise-addr=cockroach1 --join=cockroach1,cockroach2,cockroach3 --cache=.25 --max-sql-memory=.25 --background
+
+-- статус не получим, пока не проинициализируем кластер
+cockroach node status --certs-dir=certs
+
+-- on node2
+chmod 700 certs/*
+ls -l certs/
+cockroach start --certs-dir=certs --advertise-addr=cockroach2 --join=cockroach1,cockroach2,cockroach3 --cache=.25 --max-sql-memory=.25 --background
+
+-- on node 3
+chmod 700 certs/*
+cockroach start --certs-dir=certs --advertise-addr=cockroach3 --join=cockroach1,cockroach2,cockroach3 --cache=.25 --max-sql-memory=.25 --background
+
+-- for more security
+-- https://www.cockroachlabs.com/docs/v21.1/secure-a-cluster.html
+
+-- logs
+tail /home/aeugene/cockroach-data/logs/cockroach.log
+
+
+-- инициализируем кластер
+cockroach init --certs-dir=certs --host=cockroach1
+
+-- посмотрим статус кластера
+cockroach node status --certs-dir=certs
+
+-- зайдем клиентом
+cockroach sql --certs-dir=certs
+
+
+\l
+> CREATE DATABASE bank;
+
+-- посмотрим с других нод
+
+> show databases;
+
+-- добавим 4 ноду 
+gcloud beta compute --project=celtic-house-266612 instances create cockroach4 --zone=us-central1-a --machine-type=e2-medium --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --service-account=933982307116-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/cloud-platform --image-family=ubuntu-2004-lts --image-project=ubuntu-os-cloud --boot-disk-size=50GB --boot-disk-type=pd-ssd --boot-disk-device-name=cockroach4 --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any
+
+gcloud compute ssh cockroach4
+
+wget -qO- https://binaries.cockroachdb.com/cockroach-v21.1.6.linux-amd64.tgz | tar  xvz && sudo cp -i cockroach-v21.1.6.linux-amd64/cockroach /usr/local/bin/ && sudo mkdir -p /opt/cockroach && sudo chown aeugene:aeugene /opt/cockroach
+
+-- нужно перегенерить серты (мы заранее сделали)
+-- 4 нода
+scp -r /mnt/c/download/certs aeugene@34.134.219.140:/home/aeugene
+chmod 700 certs/*
+
+cockroach start --certs-dir=certs --background --pid-file=/opt/cockroach/cockroach.pid --store=/opt/cockroach/store --advertise-addr=cockroach4 --join=cockroach1,cockroach2,cockroach3
+
+-- проверим
+ps aux | grep cockroach| grep -Ev "grep"
+cockroach node status --certs-dir=certs
+
+cockroach sql --certs-dir=certs
+
+
+> use bank;
+> CREATE TABLE if not exists items (itemname varchar(128) primary key, price decimal(19,4), quantity int);
+> import INTO items (itemname, price, quantity) CSV DATA ('gs://postgres13/cockroachdb.csv') WITH DELIMITER = E'\t';
+> select * from items;
+
+> CREATE TABLE test (
+    Region VARCHAR(50),
+    Country VARCHAR(50),
+    ItemType VARCHAR(50),
+    SalesChannel VARCHAR(20),
+    OrderPriority VARCHAR(10),
+    OrderDate VARCHAR(10),
+    OrderID int,
+    ShipDate VARCHAR(10),
+    UnitsSold int,
+    UnitPrice decimal(12,2),
+    UnitCost decimal(12,2),
+    TotalRevenue decimal(12,2),
+    TotalCost decimal(12,2),
+    TotalProfit decimal(12,2)
+);
+-- за сколько загрузится 1 000 000? 125Мб
+> import INTO test (Region,Country,ItemType,SalesChannel,OrderPriority,OrderDate,OrderID,ShipDate,UnitsSold,UnitPrice,UnitCost,TotalRevenue,TotalCost,TotalProfit) CSV DATA ('gs://postgres13/1000000SalesRecords.csv') WITH DELIMITER = ',', SKIP = '1';
+
+> SELECT count(*) FROM test WHERE unitssold=124;
+> CREATE index test_idx on test(unitssold);
+
+
+-- грохнем 2 ноды
+ps aux | grep cockroach| grep -Ev "grep"
+sudo kill -9 1608
+
+cockroach node status --certs-dir=certs
+
+-- cockroach quit --insecure --host=cockroach1
+cockroach quit --certs-dir=certs
+
+-- мониторинг
+-- https://www.cockroachlabs.com/docs/v21.1/secure-a-cluster.html#step-5-access-the-db-console
+
+
+gcloud compute instances delete cockroach4
+gcloud compute instances delete cockroach3
+gcloud compute instances delete cockroach2
+gcloud compute instances delete cockroach1
+
