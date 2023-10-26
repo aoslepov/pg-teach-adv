@@ -13,12 +13,6 @@ etcd3:
 # and all other cluster members will use it as a `global configuration`
 bootstrap:
     dcs:
-        standby_cluster:
-            host: pg-lb-01
-            port: 3300
-            primary_slot_name: geo_01
-            create_replica_methods:
-            - basebackup
         ttl: 30
         loop_wait: 10
         retry_timeout: 10
