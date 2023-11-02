@@ -211,13 +211,23 @@ CREATE TABLE chicago_taxi (
 
 
 
+-- Дампим схему и выгружаем данные в csv
 pg-teach-01>>
-pg_dump postgres --table=chicago_taxi > chicago_taxi.sql
+pg_dump --schema-only postgres -t chicago_taxi > /var/lib/postgresql/chicago_taxi-schema.sql
+psql postgres -c "COPY chicago_taxi TO stdout DELIMITER ',' CSV;" > /var/lib/postgresql/chicago_taxi_migrate.csv
 
 
+-- Загружаем в storage userfile выгрузку из postgres
+cdb-01>>
+ ./cockroach userfile upload --certs-dir=certs  /home/ubuntu/chicago_taxi_migrate.csv
+ successfully uploaded to userfile://defaultdb.public.userfiles_root/chicago_taxi_migrate.csv
+ ./cockroach userfile list '*.csv' --certs-dir=certs
+chicago_taxi_migrate.csv
 
 
-./cockroach import table chicago_taxi pgdump /home/ubuntu/chicago_taxi.sql --certs-dir=certs
+./cockroach sql --certs-dir=certs
+IMPORT INTO chicago_taxi CSV DATA ('userfile:///chicago_taxi_migrate.csv.gz')  WITH ignore_unsupported_statements,decompress = 'gzip', nullif = '';
+
 
 ```
 
