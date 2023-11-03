@@ -1,4 +1,6 @@
 ```
+
+-- вм для мастера
 yc compute instance create \
   --name gpdb-master \
   --hostname gpdb-master \
@@ -10,7 +12,7 @@ yc compute instance create \
   --metadata-from-file ssh-keys=/home/aslepov/meta.txt
 
 
-
+-- вм для воркеров
 for i in {1..3}; do
 yc compute instance create \
   --name gpdb-0$i \
@@ -23,12 +25,7 @@ yc compute instance create \
   --metadata-from-file ssh-keys=/home/aslepov/meta.txt
 done
 
--- старая версия
-for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
-ssh -o StrictHostKeyChecking=no ubuntu@$i 'echo $(hostname)'
-ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo wget https://github.com/greenplum-db/gpdb/releases/download/6.25.3/greenplum-db-6.25.3-ubuntu18.04-amd64.deb && sudo apt -y install ./greenplum-db-6.25.3-ubuntu18.04-amd64.deb'
-done
-
+-- ставим greenplum из ppa
 for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo apt update'
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo apt install -y software-properties-common'
@@ -38,22 +35,26 @@ ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo apt install -y greenplum-db-6 mc
 done
 
 
+-- создаём юзера
 for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo groupadd gpadmin; sudo useradd gpadmin -r -m -g gpadmin '
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo chsh -s /bin/bash gpadmin '
 done
 
 
+-- генерируем ключи из-под пользователя gpadmin
 for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo su gpadmin -c "ssh-keygen"'
 done
 
 
+-- выводим список ключей
 for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo cat /home/gpadmin/.ssh/id_rsa.pub'
 done
 
 
+-- раскидываем ключи по всем серверам
 for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo echo "
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCnnxOtocXsNUCeQ7gF3yewYQ2Be1i7x7DAqShIxYjX3qVPq26fYT3oObN+BV6JZFABjev5uAv/1sx1dhqF6OJEhNui5z4JiYg7lD8mhSH05/fxTJbLoShFFHDC3jOzhFJhMOE9xORHS0p4CX/AKUs9VufNhxBnt3fAo3je3JTvD8HmvQpLmfYGDM5cVJSywKvL0bef215rYUhVMDJA5U2ksI3cZoOuFW4kHLEqKUDYrKs5rDhC1/a4vXyY9l3Qn2KFA78zdeJ1HBQW+w+HqEN+UvHfMTooP3cqcC5bdqNO3ZFdhKnhIItuL4wDSgvMSkdeV2r3ax25FwEO6xcY9uxB gpadmin@gpdb-master
@@ -64,6 +65,8 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC9xMFIsNZs1nVboxfQOgGklrvlHasQ8HMcVUACPATN
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo su gpadmin -c "cat /tmp/keys | tee /home/gpadmin/.ssh/authorized_keys; chmod 600 /home/gpadmin/.ssh/authorized_keys "'
 done
 
+-- прописываем в хостах имена мастера и сегментов
+-- они должны отличаться от имён хостов (если они совпадают - возможны баги)
 for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'echo "
 10.128.0.3   mdw
@@ -74,13 +77,9 @@ done
 
 
 
-????
-ssh -o StrictHostKeyChecking=no ubuntu@84.201.130.181 'sudo su gpadmin -c "ssh gpdb-01; exit; ssh gpdb-02; exit; ssh gpdb-03; exit;"  '
 
-
-
-
-
+-- создаём каталог с данными
+-- создаём файл со списком машин кластера
 for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo mkdir /data ; sudo chown -R gpadmin:gpadmin /data '
 ssh -o StrictHostKeyChecking=no ubuntu@$i ' echo "
@@ -89,10 +88,11 @@ sdw1
 sdw2
 sdw3
 " | sudo tee /opt/greenplum-db-6.25.3/hostfile  '
-ssh -o StrictHostKeyChecking=no ubuntu@$i 'echo ". /opt/greenplum-db-6.25.3/greenplum_path.sh" | sudo tee -a /home/gpadmin/.profile'
 done
 
 
+-- прописываем в bashrc энвы
+-- ставим права на каталог с гринпланом
 for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'echo ". /opt/greenplum-db-6.25.3/greenplum_path.sh" | sudo tee -a /home/gpadmin/.bashrc'
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo chown -R gpadmin:gpadmin /opt/greenplum-db-*'
@@ -100,12 +100,15 @@ done
 
 
 
+-- добавляем конфиг sysctl 
+-- /при отсутствии конфигурирования будет ошибка interconnect error/
 for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
 ssh -o StrictHostKeyChecking=no ubuntu@$i ' sudo wget https://raw.githubusercontent.com/aoslepov/pg-teach-adv/main/lesson14/configs/greenplun_sysctl.conf -O /tmp/10-greenplun_sysctl.conf '
 ssh -o StrictHostKeyChecking=no ubuntu@$i ' cat /tmp/10-greenplun_sysctl.conf | sudo tee -a /etc/sysctl.conf && sudo sysctl -p '
 done
 
 
+-- прописываем лимиты
 for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
 ssh -o StrictHostKeyChecking=no ubuntu@$i ' echo "
 * soft nofile 524288
@@ -115,18 +118,28 @@ ssh -o StrictHostKeyChecking=no ubuntu@$i ' echo "
 " | sudo tee /etc/security/limits.d/greenplun.conf  '
 done
 
-pg-master>>
 
+
+-- конфигурируем мастер
+-- ставим энвы для юзера
 ssh -o StrictHostKeyChecking=no ubuntu@158.160.55.88 'echo "export MASTER_DATA_DIRECTORY=/data/gpseg-1" | sudo tee -a /home/gpadmin/.bashrc'
+-- скачиваем конфиг
 ssh -o StrictHostKeyChecking=no ubuntu@158.160.55.88 ' sudo wget https://raw.githubusercontent.com/aoslepov/pg-teach-adv/main/lesson14/configs/gpinitsystem_config -O /opt/greenplum-db-6.25.3/gpinitsystem_config && sudo chown gpadmin:gpadmin /opt/greenplum-db-6.25.3/gpinitsystem_config'
 
 
-
+-- подготавиливаем мастер
 
 pg-master>>
-sudo su gpadmin
 
+sudo su gpadmin
+-- проверяем ssh до воркеров
+ssh sdw1
+ssh sdw2
+ssh sdw3
+
+-- синхронизируем креды
 gpssh-exkeys -f $GPHOME/hostfile
+
 [STEP 1 of 5] create local ID and authorize on local host
   ... /home/gpadmin/.ssh/id_rsa file exists ... key generation skipped
 
@@ -149,8 +162,10 @@ gpssh-exkeys -f $GPHOME/hostfile
 [INFO] completed successfully
 
 
-/opt/greenplum-db-6.25.3$ gpinitsystem -c /opt/greenplum-db-6.25.3/gpinitsystem_config -h /opt/greenplum-db-6.25.3/hostfile
---
+
+-- инициализируем кластер
+gpinitsystem -c /opt/greenplum-db-6.25.3/gpinitsystem_config -h /opt/greenplum-db-6.25.3/hostfile
+
 20231103:07:57:55:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Checking configuration parameters, please wait...
 20231103:07:57:55:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Reading Greenplum configuration file /opt/greenplum-db-6.25.3/gpinitsystem_config
 20231103:07:57:55:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Locale has not been set in /opt/greenplum-db-6.25.3/gpinitsystem_config, will set to default value
@@ -297,8 +312,10 @@ server shutting down
 20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-located in the /opt/greenplum-db-6.25.3/docs directory
 20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-------------------------------------------------------
 
+
+-- смотрим статус кластера
 gpstate
----
+
 20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-Starting gpstate with args:
 20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-local Greenplum Version: 'postgres (Greenplum Database) 6.25.3 build commit:367edc6b4dfd909fe38fc288ade9e294d74e3f9a Open Source'
 20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-master Greenplum Version: 'PostgreSQL 9.4.26 (Greenplum Database 6.25.3 build commit:367edc6b4dfd909fe38fc288ade9e294d74e3f9a Open Source) on x86_64-unknown-linux-gnu, compiled by gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0, 64-bit compiled on Oct  4 2023 23:27:38'
@@ -330,7 +347,7 @@ gpstate
 20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-----------------------------------------------------
 
 
-
+-- создаём бд и таблицу
 $ psql -d postgres
 psql (9.4.26)
 Type "help" for help.
@@ -363,6 +380,7 @@ CREATE TABLE public.chicago_taxi (
 ) distributed by (taxi_id,trip_start_timestamp,trip_end_timestamp);
 
 
+-- смотрим распределение по сегментам в кластере
 taxi=# select * from gp_segment_configuration;
  dbid | content | role | preferred_role | mode | status | port |  hostname   |   address   |    datadir
 ------+---------+------+----------------+------+--------+------+-------------+-------------+---------------
@@ -373,6 +391,7 @@ taxi=# select * from gp_segment_configuration;
     2 |       0 | p    | p              | n    | u      | 6000 | gpdb-master | gpdb-master | /data/gpseg0
 
 
+-- копируем тестовый набор данных (10GB)
 COPY chicago_taxi FROM '/data/chicago_taxi_migrate.csv' DELIMITER ',' CSV HEADER;
 
 
