@@ -25,7 +25,7 @@ PORT_BASE=6000
 declare -a DATA_DIRECTORY=(/data)
 
 #### OS-configured hostname or IP address of the master host.
-MASTER_HOSTNAME=gpdb-master
+MASTER_HOSTNAME=mdw
 
 #### File system location where the master data directory 
 #### will be created.
@@ -67,4 +67,4 @@ ENCODING=UNICODE
 
 #### Specify the location of the host address file here instead of
 #### with the -h option of gpinitsystem.
-MACHINE_LIST_FILE=/opt/greenplum-db-6.25.3/hostfile
+#MACHINE_LIST_FILE=/opt/greenplum-db-6.25.3/hostfile
