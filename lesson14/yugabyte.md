@@ -1,5 +1,5 @@
 ```
-
+--
 -- создаём ноды для 3 мастеров и 3 tservers на них
 for i in {1..3}; do
 yc compute instance create \
