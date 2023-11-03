@@ -1,5 +1,4 @@
 ```
-
 yc compute instance create \
   --name gpdb-master \
   --hostname gpdb-master \
@@ -25,74 +24,103 @@ yc compute instance create \
 done
 
 -- старая версия
-for i in {'51.250.72.133','51.250.11.200','62.84.114.85','51.250.72.16'}; do
+for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'echo $(hostname)'
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo wget https://github.com/greenplum-db/gpdb/releases/download/6.25.3/greenplum-db-6.25.3-ubuntu18.04-amd64.deb && sudo apt -y install ./greenplum-db-6.25.3-ubuntu18.04-amd64.deb'
 done
 
-for i in {'51.250.72.133','51.250.11.200','62.84.114.85','51.250.72.16'}; do
+for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo apt update'
-ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo apt install software-properties-common'
+ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo apt install -y software-properties-common'
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo add-apt-repository ppa:greenplum/db'
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo apt update'
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo apt install -y greenplum-db-6 mc'
 done
 
 
-for i in {'51.250.72.133','51.250.11.200','62.84.114.85','51.250.72.16'}; do
+for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo groupadd gpadmin; sudo useradd gpadmin -r -m -g gpadmin '
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo chsh -s /bin/bash gpadmin '
 done
 
 
-for i in {'51.250.72.133','51.250.11.200','62.84.114.85','51.250.72.16'}; do
+for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo su gpadmin -c "ssh-keygen"'
 done
 
 
-for i in {'51.250.72.133','51.250.11.200','62.84.114.85','51.250.72.16'}; do
+for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo cat /home/gpadmin/.ssh/id_rsa.pub'
 done
 
 
-for i in {'51.250.72.133','51.250.11.200','62.84.114.85','51.250.72.16'}; do
+for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo echo "
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDR1cBapT+RRC6T6miaj4WQYvZSTTaTTwEMIb2fInGS9EC4SdiJWVBPvJICgYdpAyANAaI0J2SvhCqVjzttR3jBeQWyuJ/myja44QKvAByQwLw79XLrCt4+29oIDU2zeWKwUl5cj4nRUKs1K7g4J14yBrMeuhrD5rnAtQZ0Aeq7Qh4XPT6iAejAAcEqXFynPT4k9t9ZdlAlFtUOQUMev5v8jk0D7K2I/foQtU9e3xZ02qcNptQiKsca9sb19+siajajvaY4U1zWMUCzBkNossGSKgzmJZWq3NAt3ZSg2IAUzDymxpI4iU1SXBJwRhwyLBWzS3DDunrElI8ib5lXrKq5 gpadmin@gpdb-master
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCsFoJmCPFLBbMrzY88YdXAI/rwI/5hnOzg7Dluqj2JoOzuUtGXUkdtGp6ejTTT0g5s0+TN90SD6bZBI3iX5TGqODIk8tR5BvKgEjEmc272g0zRq0JWL5ohkt2buO71tQ3Kyu4UFz9JdL64+H6r/x9MpMnOHP6jsYEP9XV4DXrzQ0hLnsqVXGgJM5aMtUWNSBRfhvsqpqg3FeeKpBp8aauVCH72LB1ACsAwcMkVbUfDT7wSg1Ks9qBEiEQZwbd8ehTrxq+qSv1TYDs90mn8PhJdrGlxySa+iXJ27GxHWyQhcLD1VILpfCEtEnnSC76vEYLn2jPV/4lc60yq0k/JThz7 gpadmin@gpdb-01
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDhldApyZLDicEOfv2u9zQRgts7KrC6pP0NH1A18i6aAVBDawnnpRLrYD+wLcWs/dQfB+Lj06NuVR/cjs+U4XT1QWrdHLULqeqGq2k1w0R/h7IoZYFI4b2vEp7gi/9xFSvKOk/QPsI5mKNjDrL96gNx1gKEy1QfmE8IMmMS0PlDtwm+aZDRQxlRMPgKw/3/2HZxNogfidVCP/MLIfGDFixIx/hvLdiCv43Fu2N+Pk6WkqgCoKZOSi0MLe6KzeWrrfNMm3BiJpEeo01lgNmNkNkgLxp5BCh8DXGYdxN/SKENv2GE6NvwbBuU7EVRzidlMfCh1lpvedxy3a/nddIVhfqF gpadmin@gpdb-02
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDYNxvnpgaYYXXq3bjCWvckuQ1cg7gnQDf4SoRmVph0PKANXtjmyAH7yW48XYjH4qjkv/BAVl/Uapa02RcFbocowyQdbuxdtsdM4mJsTyFmdYiEqi6HviIr6Z4wfGGwsrgEIYXrdvspWXoi+dvfH5fBajNcCPLvJLfBjvVfbZL5RwZ4BLrXqI3lg1e1uvU+Nxrw/LqZEf4h56Q645MBIFPgYiG2zitoeumlgbeOaFeWANQqXCgUCjW0tMD4jLce0We6J938VfJ7bV0USGmKeemuvjGDe//NSzeES0u0tfBiCFejXC42oPzUFe13IsioeCn8T6s23l5b2BDSOHcKWYfF gpadmin@gpdb-03
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCnnxOtocXsNUCeQ7gF3yewYQ2Be1i7x7DAqShIxYjX3qVPq26fYT3oObN+BV6JZFABjev5uAv/1sx1dhqF6OJEhNui5z4JiYg7lD8mhSH05/fxTJbLoShFFHDC3jOzhFJhMOE9xORHS0p4CX/AKUs9VufNhxBnt3fAo3je3JTvD8HmvQpLmfYGDM5cVJSywKvL0bef215rYUhVMDJA5U2ksI3cZoOuFW4kHLEqKUDYrKs5rDhC1/a4vXyY9l3Qn2KFA78zdeJ1HBQW+w+HqEN+UvHfMTooP3cqcC5bdqNO3ZFdhKnhIItuL4wDSgvMSkdeV2r3ax25FwEO6xcY9uxB gpadmin@gpdb-master
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDjEiSsgXXvIsXc+VCMONRSEoZYpgqTbnlN0amtkQ/A66MhNJyrbMfjLXGANeFg9VW6TMN3WzJdq3BHXyABY0P3VLE8o7gGqTObkol8leKCrNkDD/NGbvbCe6JXUY0IDoPKfjAmwugwCVb1/iTgVetsDgsMnA9rOPYxagMXYHEvs0UfzshDfZqrbSjCQwKviydnFE9oo+xhawJrTeHmJ7llDJskdApyDmWB4QfWKcSUSBWH28oVC6ZhV/7zcfWQjHzP55r9xUAYxmYv0h+YiXl/xetz/L+kUY6fKUgTSUdrnnsH88o59GwstFvYA/xie2Ro1TLQZp80rHwofPIuK4vX gpadmin@gpdb-01
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDpt+nxBie71Kl/RaNBRtLJzg713PaNXDTF4u0O8s1x6lcukfFZbNrEBEt/dO8i9EWZf00d0pVRkUhYP0eX1KhodXnJxP5h7qFjAZ3VMeXQbZ5U5Xp6FKIZVWpNj2d9r32ZAs2WfZ9YMHsyK0C3MHmsAZ/7X1dEnh2i9v31mM3yKmxYhdxUEx1e8wKmhr7N5hD6pWMBFYlYv8c24RfBNrl5UTciVSTn0sQeIwuUQS8Xvfc+Dkgz+0t/U20e33Xb6Dx9VCIBjoLqAqnfJ3fmjUit3wHfIuf+DYs3v44cl4usCO3gZ+cnnOvqPpf13UhtfKSkDm+0QZzHPA8sFF57z5Xx gpadmin@gpdb-02
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC9xMFIsNZs1nVboxfQOgGklrvlHasQ8HMcVUACPATNZOkovLiXLK9GWvWW9A4jXhslTriz2Hgi0ORM5/qySLZet+b5snOxySBd81/FE3Er6vgiFzj/kac9ossHlDxPLzgnLP/pLqDt/+Fm0USJ+SeRb7Pz6z47vnjxEF9ct7BJTRlCUjplSEcK4pBHdjadv8HBLk9mY3ftSbqKSlbmJ+05SE8ic1tYzk3Ay+7Ae5VfDymyg5vzd37NjOnlqqz0ObnGbXochZudK8riuYqgLLDcc0PKrQJ/S6HLJJuAEGwTk0ORuKQ2YK0KDrYrWSZy3k1tkTQdTplhHjbA/YqvVvBN gpadmin@gpdb-03
 " > /tmp/keys'
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo su gpadmin -c "cat /tmp/keys | tee /home/gpadmin/.ssh/authorized_keys; chmod 600 /home/gpadmin/.ssh/authorized_keys "'
 done
 
+for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
+ssh -o StrictHostKeyChecking=no ubuntu@$i 'echo "
+10.128.0.3   mdw
+10.128.0.32 sdw1
+10.128.0.11 sdw2
+10.128.0.36 sdw3" | sudo tee -a /etc/hosts'
+done
+
+
+
 ????
 ssh -o StrictHostKeyChecking=no ubuntu@84.201.130.181 'sudo su gpadmin -c "ssh gpdb-01; exit; ssh gpdb-02; exit; ssh gpdb-03; exit;"  '
 
-ssh -o StrictHostKeyChecking=no ubuntu@51.250.72.133 ' sudo wget https://raw.githubusercontent.com/aoslepov/pg-teach-adv/main/lesson14/configs/gpinitsystem_config -O /opt/greenplum-db-6.25.3/gpinitsystem_config && sudo chown gpadmin:gpadmin /opt/greenplum-db-6.25.3/gpinitsystem_config'
 
 
 
-for i in {'51.250.72.133','51.250.11.200','62.84.114.85','51.250.72.16'}; do
+
+for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo mkdir /data ; sudo chown -R gpadmin:gpadmin /data '
 ssh -o StrictHostKeyChecking=no ubuntu@$i ' echo "
-gpdb-master
-gpdb-01
-gpdb-02
-gpdb-03
+mdw
+sdw1
+sdw2
+sdw3
 " | sudo tee /opt/greenplum-db-6.25.3/hostfile  '
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'echo ". /opt/greenplum-db-6.25.3/greenplum_path.sh" | sudo tee -a /home/gpadmin/.profile'
 done
 
 
-for i in {'51.250.72.133','51.250.11.200','62.84.114.85','51.250.72.16'}; do
+for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'echo ". /opt/greenplum-db-6.25.3/greenplum_path.sh" | sudo tee -a /home/gpadmin/.bashrc'
-ssh -o StrictHostKeyChecking=no ubuntu@$i 'echo "export MASTER_DATA_DIRECTORY=/data/gpseg-1" | sudo tee -a /home/gpadmin/.bashrc'
-done
-
-
-for i in {'51.250.72.133','51.250.11.200','62.84.114.85','51.250.72.16'}; do
 ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo chown -R gpadmin:gpadmin /opt/greenplum-db-*'
 done
+
+
+
+for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
+ssh -o StrictHostKeyChecking=no ubuntu@$i ' sudo wget https://raw.githubusercontent.com/aoslepov/pg-teach-adv/main/lesson14/configs/greenplun_sysctl.conf -O /tmp/10-greenplun_sysctl.conf '
+ssh -o StrictHostKeyChecking=no ubuntu@$i ' cat /tmp/10-greenplun_sysctl.conf | sudo tee -a /etc/sysctl.conf && sudo sysctl -p '
+done
+
+
+for i in {'158.160.55.88','130.193.37.81','158.160.112.192','158.160.110.182'}; do
+ssh -o StrictHostKeyChecking=no ubuntu@$i ' echo "
+* soft nofile 524288
+* hard nofile 524288
+* soft nproc 131072
+* hard nproc 131072
+" | sudo tee /etc/security/limits.d/greenplun.conf  '
+done
+
+pg-master>>
+
+ssh -o StrictHostKeyChecking=no ubuntu@158.160.55.88 'echo "export MASTER_DATA_DIRECTORY=/data/gpseg-1" | sudo tee -a /home/gpadmin/.bashrc'
+ssh -o StrictHostKeyChecking=no ubuntu@158.160.55.88 ' sudo wget https://raw.githubusercontent.com/aoslepov/pg-teach-adv/main/lesson14/configs/gpinitsystem_config -O /opt/greenplum-db-6.25.3/gpinitsystem_config && sudo chown gpadmin:gpadmin /opt/greenplum-db-6.25.3/gpinitsystem_config'
+
+
 
 
 pg-master>>
@@ -105,172 +133,201 @@ gpssh-exkeys -f $GPHOME/hostfile
 [STEP 2 of 5] keyscan all hosts and update known_hosts file
 
 [STEP 3 of 5] retrieving credentials from remote hosts
-  ... send to gpdb-01
-  ... send to gpdb-02
-  ... send to gpdb-03
+  ... send to mdw
+  ... send to sdw1
+  ... send to sdw2
+  ... send to sdw3
 
 [STEP 4 of 5] determine common authentication file content
 
 [STEP 5 of 5] copy authentication files to all remote hosts
-  ... finished key exchange with gpdb-01
-  ... finished key exchange with gpdb-02
-  ... finished key exchange with gpdb-03
+  ... finished key exchange with mdw
+  ... finished key exchange with sdw1
+  ... finished key exchange with sdw2
+  ... finished key exchange with sdw3
 
 [INFO] completed successfully
 
 
-gpinitsystem -c /opt/greenplum-db-6.25.3/gpinitsystem_config
-------
-0231102:22:03:13:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Checking configuration parameters, please wait...
-20231102:22:03:13:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Reading Greenplum configuration file /opt/greenplum-db-6.25.3/gpinitsystem_config
-20231102:22:03:13:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Locale has not been set in /opt/greenplum-db-6.25.3/gpinitsystem_config, will set to default value
-20231102:22:03:13:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Locale set to en_US.utf8
-20231102:22:03:13:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-No DATABASE_NAME set, will exit following template1 updates
-20231102:22:03:13:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-MASTER_MAX_CONNECT not set, will set to default value 250
-20231102:22:03:13:008149 gpinitsystem:gpdb-master:gpadmin-[WARN]:-Master open file limit is 1024 should be >= 65535
-20231102:22:03:13:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Checking configuration parameters, Completed
-20231102:22:03:13:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Commencing multi-home checks, please wait...
+/opt/greenplum-db-6.25.3$ gpinitsystem -c /opt/greenplum-db-6.25.3/gpinitsystem_config -h /opt/greenplum-db-6.25.3/hostfile
+--
+20231103:07:57:55:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Checking configuration parameters, please wait...
+20231103:07:57:55:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Reading Greenplum configuration file /opt/greenplum-db-6.25.3/gpinitsystem_config
+20231103:07:57:55:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Locale has not been set in /opt/greenplum-db-6.25.3/gpinitsystem_config, will set to default value
+20231103:07:57:55:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Locale set to en_US.utf8
+20231103:07:57:55:007466 gpinitsystem:gpdb-master:gpadmin-[WARN]:-Master hostname mdw does not match hostname output
+20231103:07:57:55:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Checking to see if mdw can be resolved on this host
+20231103:07:57:55:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Can resolve mdw to this host
+20231103:07:57:55:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-No DATABASE_NAME set, will exit following template1 updates
+20231103:07:57:55:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-MASTER_MAX_CONNECT not set, will set to default value 250
+20231103:07:57:55:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Checking configuration parameters, Completed
+20231103:07:57:55:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Commencing multi-home checks, please wait...
 ....
-20231102:22:03:14:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Configuring build for standard array
-20231102:22:03:14:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Commencing multi-home checks, Completed
-20231102:22:03:14:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Building primary segment instance array, please wait...
+20231103:07:57:56:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Configuring build for standard array
+20231103:07:57:56:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Commencing multi-home checks, Completed
+20231103:07:57:56:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Building primary segment instance array, please wait...
 ....
-20231102:22:03:17:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Checking Master host
-20231102:22:03:17:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Checking new segment hosts, please wait...
-20231102:22:03:17:008149 gpinitsystem:gpdb-master:gpadmin-[WARN]:-Host gpdb-master open files limit is 1024 should be >= 65535
-20231102:22:03:19:008149 gpinitsystem:gpdb-master:gpadmin-[WARN]:-Host gpdb-master open files limit is 1024 should be >= 65535
-20231102:22:03:20:008149 gpinitsystem:gpdb-master:gpadmin-[WARN]:-Host gpdb-master open files limit is 1024 should be >= 65535
-20231102:22:03:21:008149 gpinitsystem:gpdb-master:gpadmin-[WARN]:-Host gpdb-master open files limit is 1024 should be >= 65535
+20231103:07:57:59:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Checking Master host
+20231103:07:57:59:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Checking new segment hosts, please wait...
 ....
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Checking new segment hosts, Completed
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Greenplum Database Creation Parameters
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:---------------------------------------
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master Configuration
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:---------------------------------------
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master instance name       = Greenplum Data Platform
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master hostname            = gpdb-master
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master port                = 5432
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master instance dir        = /data/gpseg-1
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master LOCALE              = en_US.utf8
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Greenplum segment prefix   = gpseg
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master Database            =
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master connections         = 250
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master buffers             = 128000kB
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Segment connections        = 750
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Segment buffers            = 128000kB
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Checkpoint segments        = 8
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Encoding                   = UNICODE
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Postgres param file        = Off
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Initdb to be used          = /opt/greenplum-db-6.25.3/bin/initdb
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-GP_LIBRARY_PATH is         = /opt/greenplum-db-6.25.3/lib
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-HEAP_CHECKSUM is           = on
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-HBA_HOSTNAMES is           = 0
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[WARN]:-Ulimit check               = Warnings generated, see log file <<<<<
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Array host connect type    = Single hostname per node
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master IP address [1]      = ::1
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master IP address [2]      = 10.128.0.7
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master IP address [3]      = fe80::d20d:13ff:fe5d:8bc9
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Standby Master             = Not Configured
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Number of primary segments = 1
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Total Database segments    = 4
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Trusted shell              = ssh
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Number segment hosts       = 4
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Mirroring config           = OFF
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:----------------------------------------
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Greenplum Primary Segment Configuration
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:----------------------------------------
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-gpdb-master 	6000 	gpdb-master 	/data/gpseg0 	2
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-gpdb-01 	6000 	gpdb-01 	/data/gpseg1 	3
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-gpdb-02 	6000 	gpdb-02 	/data/gpseg2 	4
-20231102:22:03:26:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-gpdb-03 	6000 	gpdb-03 	/data/gpseg3 	5
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Checking new segment hosts, Completed
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Greenplum Database Creation Parameters
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:---------------------------------------
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master Configuration
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:---------------------------------------
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master instance name       = Greenplum Data Platform
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master hostname            = mdw
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master port                = 5432
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master instance dir        = /data/gpseg-1
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master LOCALE              = en_US.utf8
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Greenplum segment prefix   = gpseg
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master Database            =
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master connections         = 250
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master buffers             = 128000kB
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Segment connections        = 750
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Segment buffers            = 128000kB
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Checkpoint segments        = 8
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Encoding                   = UNICODE
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Postgres param file        = Off
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Initdb to be used          = /opt/greenplum-db-6.25.3/bin/initdb
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-GP_LIBRARY_PATH is         = /opt/greenplum-db-6.25.3/lib
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-HEAP_CHECKSUM is           = on
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-HBA_HOSTNAMES is           = 0
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Ulimit check               = Passed
+20231103:07:58:08:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Array host connect type    = Single hostname per node
+20231103:07:58:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master IP address [1]      = ::1
+20231103:07:58:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master IP address [2]      = 10.128.0.3
+20231103:07:58:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Master IP address [3]      = fe80::d20d:13ff:fe26:ce94
+20231103:07:58:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Standby Master             = Not Configured
+20231103:07:58:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Number of primary segments = 1
+20231103:07:58:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Total Database segments    = 4
+20231103:07:58:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Trusted shell              = ssh
+20231103:07:58:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Number segment hosts       = 4
+20231103:07:58:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Mirroring config           = OFF
+20231103:07:58:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:----------------------------------------
+20231103:07:58:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Greenplum Primary Segment Configuration
+20231103:07:58:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:----------------------------------------
+20231103:07:58:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-gpdb-master 	6000 	mdw 	/data/gpseg0 	2
+20231103:07:58:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-gpdb-01 	6000 	sdw1 	/data/gpseg1 	3
+20231103:07:58:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-gpdb-02 	6000 	sdw2 	/data/gpseg2 	4
+20231103:07:58:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-gpdb-03 	6000 	sdw3 	/data/gpseg3 	5
 
 Continue with Greenplum creation Yy|Nn (default=N):
 > y
-20231102:22:03:29:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Building the Master instance database, please wait...
-20231102:22:03:41:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Starting the Master in admin mode
-20231102:22:03:41:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Commencing parallel build of primary segment instances
-20231102:22:03:41:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Spawning parallel processes    batch [1], please wait...
+20231103:07:58:26:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Building the Master instance database, please wait...
+20231103:07:58:39:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Starting the Master in admin mode
+20231103:07:58:39:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Commencing parallel build of primary segment instances
+20231103:07:58:39:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Spawning parallel processes    batch [1], please wait...
 ....
-20231102:22:03:41:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Waiting for parallel processes batch [1], please wait...
-......................
-20231102:22:04:03:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:------------------------------------------------
-20231102:22:04:03:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Parallel process exit status
-20231102:22:04:03:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:------------------------------------------------
-20231102:22:04:03:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Total processes marked as completed           = 4
-20231102:22:04:03:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Total processes marked as killed              = 0
-20231102:22:04:04:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Total processes marked as failed              = 0
-20231102:22:04:04:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:------------------------------------------------
-20231102:22:04:04:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Removing back out file
-20231102:22:04:04:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-No errors generated from parallel processes
-20231102:22:04:04:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Restarting the Greenplum instance in production mode
-20231102:22:04:04:013359 gpstop:gpdb-master:gpadmin-[INFO]:-Starting gpstop with args: -a -l /home/gpadmin/gpAdminLogs -m -d /data/gpseg-1
-20231102:22:04:04:013359 gpstop:gpdb-master:gpadmin-[INFO]:-Gathering information and validating the environment...
-20231102:22:04:04:013359 gpstop:gpdb-master:gpadmin-[INFO]:-Obtaining Greenplum Master catalog information
-20231102:22:04:04:013359 gpstop:gpdb-master:gpadmin-[INFO]:-Obtaining Segment details from master...
-20231102:22:04:04:013359 gpstop:gpdb-master:gpadmin-[INFO]:-Greenplum Version: 'postgres (Greenplum Database) 6.25.3 build commit:367edc6b4dfd909fe38fc288ade9e294d74e3f9a Open Source'
-20231102:22:04:04:013359 gpstop:gpdb-master:gpadmin-[INFO]:-Commencing Master instance shutdown with mode='smart'
-20231102:22:04:04:013359 gpstop:gpdb-master:gpadmin-[INFO]:-Master segment instance directory=/data/gpseg-1
-20231102:22:04:04:013359 gpstop:gpdb-master:gpadmin-[INFO]:-Stopping master segment and waiting for user connections to finish ...
+20231103:07:58:40:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Waiting for parallel processes batch [1], please wait...
+.....................
+20231103:07:59:01:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:------------------------------------------------
+20231103:07:59:01:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Parallel process exit status
+20231103:07:59:01:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:------------------------------------------------
+20231103:07:59:01:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Total processes marked as completed           = 4
+20231103:07:59:01:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Total processes marked as killed              = 0
+20231103:07:59:01:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Total processes marked as failed              = 0
+20231103:07:59:01:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:------------------------------------------------
+20231103:07:59:01:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Removing back out file
+20231103:07:59:01:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-No errors generated from parallel processes
+20231103:07:59:01:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Restarting the Greenplum instance in production mode
+20231103:07:59:01:012695 gpstop:gpdb-master:gpadmin-[INFO]:-Starting gpstop with args: -a -l /home/gpadmin/gpAdminLogs -m -d /data/gpseg-1
+20231103:07:59:01:012695 gpstop:gpdb-master:gpadmin-[INFO]:-Gathering information and validating the environment...
+20231103:07:59:01:012695 gpstop:gpdb-master:gpadmin-[INFO]:-Obtaining Greenplum Master catalog information
+20231103:07:59:01:012695 gpstop:gpdb-master:gpadmin-[INFO]:-Obtaining Segment details from master...
+20231103:07:59:01:012695 gpstop:gpdb-master:gpadmin-[INFO]:-Greenplum Version: 'postgres (Greenplum Database) 6.25.3 build commit:367edc6b4dfd909fe38fc288ade9e294d74e3f9a Open Source'
+20231103:07:59:01:012695 gpstop:gpdb-master:gpadmin-[INFO]:-Commencing Master instance shutdown with mode='smart'
+20231103:07:59:01:012695 gpstop:gpdb-master:gpadmin-[INFO]:-Master segment instance directory=/data/gpseg-1
+20231103:07:59:01:012695 gpstop:gpdb-master:gpadmin-[INFO]:-Stopping master segment and waiting for user connections to finish ...
 server shutting down
-20231102:22:04:05:013359 gpstop:gpdb-master:gpadmin-[INFO]:-Attempting forceful termination of any leftover master process
-20231102:22:04:05:013359 gpstop:gpdb-master:gpadmin-[INFO]:-Terminating processes for segment /data/gpseg-1
-20231102:22:04:07:013756 gpstart:gpdb-master:gpadmin-[INFO]:-Starting gpstart with args: -a -l /home/gpadmin/gpAdminLogs -d /data/gpseg-1
-20231102:22:04:07:013756 gpstart:gpdb-master:gpadmin-[INFO]:-Gathering information and validating the environment...
-20231102:22:04:07:013756 gpstart:gpdb-master:gpadmin-[INFO]:-Greenplum Binary Version: 'postgres (Greenplum Database) 6.25.3 build commit:367edc6b4dfd909fe38fc288ade9e294d74e3f9a Open Source'
-20231102:22:04:07:013756 gpstart:gpdb-master:gpadmin-[INFO]:-Greenplum Catalog Version: '301908232'
-20231102:22:04:07:013756 gpstart:gpdb-master:gpadmin-[INFO]:-Starting Master instance in admin mode
-20231102:22:04:08:013756 gpstart:gpdb-master:gpadmin-[INFO]:-Obtaining Greenplum Master catalog information
-20231102:22:04:08:013756 gpstart:gpdb-master:gpadmin-[INFO]:-Obtaining Segment details from master...
-20231102:22:04:08:013756 gpstart:gpdb-master:gpadmin-[INFO]:-Setting new master era
-20231102:22:04:08:013756 gpstart:gpdb-master:gpadmin-[INFO]:-Master Started...
-20231102:22:04:08:013756 gpstart:gpdb-master:gpadmin-[INFO]:-Shutting down master
-20231102:22:04:10:013756 gpstart:gpdb-master:gpadmin-[INFO]:-Commencing parallel segment instance startup, please wait...
-.
-20231102:22:04:12:013756 gpstart:gpdb-master:gpadmin-[INFO]:-Process results...
-20231102:22:04:12:013756 gpstart:gpdb-master:gpadmin-[INFO]:-----------------------------------------------------
-20231102:22:04:12:013756 gpstart:gpdb-master:gpadmin-[INFO]:-   Successful segment starts                                            = 4
-20231102:22:04:12:013756 gpstart:gpdb-master:gpadmin-[INFO]:-   Failed segment starts                                                = 0
-20231102:22:04:12:013756 gpstart:gpdb-master:gpadmin-[INFO]:-   Skipped segment starts (segments are marked down in configuration)   = 0
-20231102:22:04:12:013756 gpstart:gpdb-master:gpadmin-[INFO]:-----------------------------------------------------
-20231102:22:04:12:013756 gpstart:gpdb-master:gpadmin-[INFO]:-Successfully started 4 of 4 segment instances
-20231102:22:04:12:013756 gpstart:gpdb-master:gpadmin-[INFO]:-----------------------------------------------------
-20231102:22:04:12:013756 gpstart:gpdb-master:gpadmin-[INFO]:-Starting Master instance gpdb-master directory /data/gpseg-1
-20231102:22:04:12:013756 gpstart:gpdb-master:gpadmin-[INFO]:-Command pg_ctl reports Master gpdb-master instance active
-20231102:22:04:12:013756 gpstart:gpdb-master:gpadmin-[INFO]:-Connecting to dbname='template1' connect_timeout=15
-20231102:22:04:12:013756 gpstart:gpdb-master:gpadmin-[INFO]:-No standby master configured.  skipping...
-20231102:22:04:12:013756 gpstart:gpdb-master:gpadmin-[INFO]:-Database successfully started
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Completed restart of Greenplum instance in production mode
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Scanning utility log file for any warning messages
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[WARN]:-*******************************************************
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[WARN]:-Scan of log file indicates that some warnings or errors
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[WARN]:-were generated during the array creation
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Please review contents of log file
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-/home/gpadmin/gpAdminLogs/gpinitsystem_20231102.log
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-To determine level of criticality
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-These messages could be from a previous run of the utility
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-that was called today!
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[WARN]:-*******************************************************
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Greenplum Database instance successfully created
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-------------------------------------------------------
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-To complete the environment configuration, please
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-update gpadmin .bashrc file with the following
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-1. Ensure that the greenplum_path.sh file is sourced
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-2. Add "export MASTER_DATA_DIRECTORY=/data/gpseg-1"
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-   to access the Greenplum scripts for this instance:
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-   or, use -d /data/gpseg-1 option for the Greenplum scripts
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-   Example gpstate -d /data/gpseg-1
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Script log file = /home/gpadmin/gpAdminLogs/gpinitsystem_20231102.log
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-To remove instance, run gpdeletesystem utility
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-To initialize a Standby Master Segment for this Greenplum instance
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Review options for gpinitstandby
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-------------------------------------------------------
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-The Master /data/gpseg-1/pg_hba.conf post gpinitsystem
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-has been configured to allow all hosts within this new
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-array to intercommunicate. Any hosts external to this
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-new array must be explicitly added to this file
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Refer to the Greenplum Admin support guide which is
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-located in the /opt/greenplum-db-6.25.3/docs directory
-20231102:22:04:12:008149 gpinitsystem:gpdb-master:gpadmin-[INFO]:-------------------------------------------------------
+20231103:07:59:03:012695 gpstop:gpdb-master:gpadmin-[INFO]:-Attempting forceful termination of any leftover master process
+20231103:07:59:03:012695 gpstop:gpdb-master:gpadmin-[INFO]:-Terminating processes for segment /data/gpseg-1
+20231103:07:59:05:013092 gpstart:gpdb-master:gpadmin-[INFO]:-Starting gpstart with args: -a -l /home/gpadmin/gpAdminLogs -d /data/gpseg-1
+20231103:07:59:05:013092 gpstart:gpdb-master:gpadmin-[INFO]:-Gathering information and validating the environment...
+20231103:07:59:05:013092 gpstart:gpdb-master:gpadmin-[INFO]:-Greenplum Binary Version: 'postgres (Greenplum Database) 6.25.3 build commit:367edc6b4dfd909fe38fc288ade9e294d74e3f9a Open Source'
+20231103:07:59:05:013092 gpstart:gpdb-master:gpadmin-[INFO]:-Greenplum Catalog Version: '301908232'
+20231103:07:59:05:013092 gpstart:gpdb-master:gpadmin-[INFO]:-Starting Master instance in admin mode
+20231103:07:59:05:013092 gpstart:gpdb-master:gpadmin-[INFO]:-Obtaining Greenplum Master catalog information
+20231103:07:59:05:013092 gpstart:gpdb-master:gpadmin-[INFO]:-Obtaining Segment details from master...
+20231103:07:59:05:013092 gpstart:gpdb-master:gpadmin-[INFO]:-Setting new master era
+20231103:07:59:05:013092 gpstart:gpdb-master:gpadmin-[INFO]:-Master Started...
+20231103:07:59:05:013092 gpstart:gpdb-master:gpadmin-[INFO]:-Shutting down master
+20231103:07:59:08:013092 gpstart:gpdb-master:gpadmin-[INFO]:-Commencing parallel segment instance startup, please wait...
+20231103:07:59:09:013092 gpstart:gpdb-master:gpadmin-[INFO]:-Process results...
+20231103:07:59:09:013092 gpstart:gpdb-master:gpadmin-[INFO]:-----------------------------------------------------
+20231103:07:59:09:013092 gpstart:gpdb-master:gpadmin-[INFO]:-   Successful segment starts                                            = 4
+20231103:07:59:09:013092 gpstart:gpdb-master:gpadmin-[INFO]:-   Failed segment starts                                                = 0
+20231103:07:59:09:013092 gpstart:gpdb-master:gpadmin-[INFO]:-   Skipped segment starts (segments are marked down in configuration)   = 0
+20231103:07:59:09:013092 gpstart:gpdb-master:gpadmin-[INFO]:-----------------------------------------------------
+20231103:07:59:09:013092 gpstart:gpdb-master:gpadmin-[INFO]:-Successfully started 4 of 4 segment instances
+20231103:07:59:09:013092 gpstart:gpdb-master:gpadmin-[INFO]:-----------------------------------------------------
+20231103:07:59:09:013092 gpstart:gpdb-master:gpadmin-[INFO]:-Starting Master instance mdw directory /data/gpseg-1
+20231103:07:59:09:013092 gpstart:gpdb-master:gpadmin-[INFO]:-Command pg_ctl reports Master mdw instance active
+20231103:07:59:09:013092 gpstart:gpdb-master:gpadmin-[INFO]:-Connecting to dbname='template1' connect_timeout=15
+20231103:07:59:09:013092 gpstart:gpdb-master:gpadmin-[INFO]:-No standby master configured.  skipping...
+20231103:07:59:09:013092 gpstart:gpdb-master:gpadmin-[INFO]:-Database successfully started
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Completed restart of Greenplum instance in production mode
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Scanning utility log file for any warning messages
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[WARN]:-*******************************************************
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[WARN]:-Scan of log file indicates that some warnings or errors
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[WARN]:-were generated during the array creation
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Please review contents of log file
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-/home/gpadmin/gpAdminLogs/gpinitsystem_20231103.log
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-To determine level of criticality
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[WARN]:-*******************************************************
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Greenplum Database instance successfully created
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-------------------------------------------------------
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-To complete the environment configuration, please
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-update gpadmin .bashrc file with the following
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-1. Ensure that the greenplum_path.sh file is sourced
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-2. Add "export MASTER_DATA_DIRECTORY=/data/gpseg-1"
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-   to access the Greenplum scripts for this instance:
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-   or, use -d /data/gpseg-1 option for the Greenplum scripts
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-   Example gpstate -d /data/gpseg-1
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Script log file = /home/gpadmin/gpAdminLogs/gpinitsystem_20231103.log
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-To remove instance, run gpdeletesystem utility
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-To initialize a Standby Master Segment for this Greenplum instance
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Review options for gpinitstandby
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-------------------------------------------------------
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-The Master /data/gpseg-1/pg_hba.conf post gpinitsystem
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-has been configured to allow all hosts within this new
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-array to intercommunicate. Any hosts external to this
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-new array must be explicitly added to this file
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-Refer to the Greenplum Admin support guide which is
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-located in the /opt/greenplum-db-6.25.3/docs directory
+20231103:07:59:09:007466 gpinitsystem:gpdb-master:gpadmin-[INFO]:-------------------------------------------------------
+
+gpstate
+---
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-Starting gpstate with args:
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-local Greenplum Version: 'postgres (Greenplum Database) 6.25.3 build commit:367edc6b4dfd909fe38fc288ade9e294d74e3f9a Open Source'
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-master Greenplum Version: 'PostgreSQL 9.4.26 (Greenplum Database 6.25.3 build commit:367edc6b4dfd909fe38fc288ade9e294d74e3f9a Open Source) on x86_64-unknown-linux-gnu, compiled by gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0, 64-bit compiled on Oct  4 2023 23:27:38'
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-Obtaining Segment details from master...
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-Gathering data from segments...
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-Greenplum instance status summary
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-----------------------------------------------------
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-   Master instance                                = Active
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-   Master standby                                 = No master standby configured
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-   Total segment instance count from metadata     = 4
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-----------------------------------------------------
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-   Primary Segment Status
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-----------------------------------------------------
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-   Total primary segments                         = 4
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-   Total primary segment valid (at master)        = 4
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-   Total primary segment failures (at master)     = 0
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-   Total number of postmaster.pid files missing   = 0
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-   Total number of postmaster.pid files found     = 4
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-   Total number of postmaster.pid PIDs missing    = 0
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-   Total number of postmaster.pid PIDs found      = 4
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-   Total number of /tmp lock files missing        = 0
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-   Total number of /tmp lock files found          = 4
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-   Total number postmaster processes missing      = 0
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-   Total number postmaster processes found        = 4
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-----------------------------------------------------
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-   Mirror Segment Status
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-----------------------------------------------------
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-   Mirrors not configured on this array
+20231103:07:59:32:013798 gpstate:gpdb-master:gpadmin-[INFO]:-----------------------------------------------------
 
 
 
@@ -323,48 +380,22 @@ vacuum analyze chicago_taxi;
 create index idx_taxi_id on chicago_taxi(taxi_id);
 create index idx_dates on chicago_taxi(trip_start_timestamp,trip_end_timestamp);
 
-
 -- выборка рандомной записи по индексу
 select taxi_id from chicago_taxi order by random() limit 1;
-
-
+Time: 1650.593 ms
 
 --выборка данных за неделю
 postgres=# select taxi_id,trip_start_timestamp,trip_end_timestamp from chicago_taxi where trip_start_timestamp between date'2016-02-01' and date'2016-02-07';
+Time: 479.928 ms
 
 
-. /opt/greenplum-db-6.25.3/greenplum_path.sh
 
+Для сравнения, в postgres были следующие результаты
+-- выборка рандомной записи по индексу
+select taxi_id from chicago_taxi order by random() limit 1;
+Time: 5949.964 ms (00:05.950)
 
-WARNING:  interconnect may encountered a network error, please check your network  (seg2 slice1 10.128.0.29:6000 pid=9785)
-DETAIL:  Failed to send packet (seq 1) to 127.0.1.1:40123 (pid 3310 cid -1) after 100 retries.
-
-
-for i in {'51.250.72.133','51.250.11.200','62.84.114.85','51.250.72.16'}; do
-ssh -o StrictHostKeyChecking=no ubuntu@$i 'sudo chsh -s /bin/bash gpadmin '
-done
-
-
-WARNING:  interconnect may encountered a network error, please check your network  (seg1 slice1 10.128.0.18:6000 pid=14172)
-DETAIL:  Failed to send packet (seq 1) to 127.0.1.1:43723 (pid 5663 cid -1) after 100 retries.
-WARNING:  interconnect may encountered a network error, please check your network  (seg3 slice1 10.128.0.19:6000 pid=14628)
-DETAIL:  Failed to send packet (seq 1) to 127.0.1.1:43723 (pid 5663 cid -1) after 100 retries.
-WARNING:  interconnect may encountered a network error, please check your network  (seg2 slice1 10.128.0.27:6000 pid=14770)
-DETAIL:  Failed to send packet (seq 1) to 127.0.1.1:43723 (pid 5663 cid -1) after 100 retries.
-
-
-gpinitsystem -c gpinitsystem_config -h hostfile_gpinitsystem
-
-hostfile_gpinitsystem
-
-gpconfig -c gp_interconnect_transmit_timeout -v 600
-gpconfig -c gp_interconnect_queue_depth -v 10
-
-gpconfig -c gp_log_interconnect -v verbose --skipvalidation
-gpconfig -c log_min_messages -v debug1
-gpstop -au
-
-
-gp_max_packet_size
+--выборка данных за неделю
+postgres=# select taxi_id,trip_start_timestamp,trip_end_timestamp from chicago_taxi where trip_start_timestamp between date'2016-02-01' and date'2016-02-07';
+Time: 69201.562 ms (01:09.202)
 ```
-
