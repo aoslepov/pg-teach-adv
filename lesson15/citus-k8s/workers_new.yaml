@@ -35,13 +35,13 @@ spec:
               command:
               - /bin/sh
               - -c
-              - curr_host=$(hostname -I| sed 's/^[ \t]*//;s/[ \t]*$//') ; psql --host=citus-master --username=postgres --command="SELECT * from master_add_node('${curr_host}', 5432);"
+              - ulimit -n 65536 ; psql --host=citus-master --username=postgres --command="SELECT * from master_add_node('${hostname}', 5432);"
           preStop:
             exec:
               command:
               - /bin/sh
               - -c
-              - curr_host=$(hostname -I| sed 's/^[ \t]*//;s/[ \t]*$//') ; psql --host=citus-master --username=postgres --command="SELECT * from master_remove_node('${curr_host}', 5432);"
+              - ulimit -n 65536 ; psql --host=citus-master --username=postgres --command="SELECT * from master_remove_node('${hostname}', 5432);""
         ports:
         - containerPort: 5432
         env:

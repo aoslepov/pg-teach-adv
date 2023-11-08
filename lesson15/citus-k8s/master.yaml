@@ -39,6 +39,13 @@ spec:
       containers:
       - name: citus
         image: citusdata/citus:12
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - ulimit -n 65536
         ports:
         - containerPort: 5432
         env:
