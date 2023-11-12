@@ -30,12 +30,12 @@ spec:
       - name: citus-worker
         image: citusdata/citus:12
         lifecycle:
-          postStart:
-            exec:
-              command:
-              - /bin/sh
-              - -c
-              - curr_host=$(hostname -I| sed 's/^[ \t]*//;s/[ \t]*$//') ; psql --host=citus-master --username=postgres --command="SELECT * from master_add_node('${curr_host}', 5432);" >> /tmp/logs/log1
+#          postStart:
+#            exec:
+#              command:
+#              - /bin/sh
+#              - -c
+#              - exec (sleep 20 && psql --host=citus-master --username=postgres --command="SELECT * from master_add_node('${hostname}.citus-worker', 5432);")&
           preStop:
             exec:
               command:
@@ -64,23 +64,11 @@ spec:
         volumeMounts:
         - name: storage
           mountPath: /var/lib/postgresql/data
-        - name: logst
-          mountPath: /tmp/logs
         livenessProbe:
           exec:
             command:
             - ./pg_healthcheck
           initialDelaySeconds: 60
-      initContainers:
-        - name: logshipper
-          image: alpine:latest
-          command: ['sh', '-c', 'tail -f /tmp/logs/log1']
-          volumeMounts:
-            - name: logst
-              mountPath: /tmp/logs
-      volumes:
-        - name: logst
-          emptyDir: {}
   volumeClaimTemplates:
   - metadata:
       name: storage
@@ -88,4 +76,4 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 50Gi
+          storage: 5Gi

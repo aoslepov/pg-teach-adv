@@ -30,7 +30,7 @@ spec:
   selector:
     matchLabels:
       app: citus-master
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       labels:
