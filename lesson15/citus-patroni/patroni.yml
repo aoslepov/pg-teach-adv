@@ -57,7 +57,7 @@ postgresql:
     listen: SED_CURRENT_ADDRESS:5432 # адрес той ноды, в которой находится этот файл
     connect_address: SED_CURRENT_ADDRESS:5432 # адрес той ноды, в которой находится этот файл
     data_dir: /var/lib/postgresql/data/patroni # эту директорию создаст скрипт, описанный выше и установит нужные права
-    bin_dir:  /usr/lib/postgresql/16/bin # укажите путь до вашей директории с postgresql
+    bin_dir:  /usr/lib/postgresql/SED_PG_VERSION/bin # укажите путь до вашей директории с postgresql
     pgpass: /tmp/pgpass
     authentication:
         replication:
