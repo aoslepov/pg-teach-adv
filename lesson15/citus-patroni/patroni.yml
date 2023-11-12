@@ -7,7 +7,7 @@ restapi:
     connect_address: SED_CURRENT_ADDRESS:8008 # адрес той ноды, в которой находится этот файл
 
 etcd3:
-    hosts: etcd-01:2379
+    hosts: SED_ETCD_HOSTS
 
 # this section (bootstrap) will be written into Etcd:/<namespace>/<scope>/config after initializing new cluster
 # and all other cluster members will use it as a `global configuration`
@@ -51,7 +51,7 @@ bootstrap:
 
 citus:
   database: citus
-  group: 0  # coordinator
+  group: SED_GROUI_ID_NUM  # coordinator
 
 postgresql:
     listen: SED_CURRENT_ADDRESS:5432 # адрес той ноды, в которой находится этот файл
@@ -71,6 +71,7 @@ postgresql:
             checkpoint: 'fast'
     parameters:
         shared_preload_libraries: 'citus, pg_stat_statements'
+        archive_command: 'on'
 
 tags:
     nofailover: false
