@@ -1,4 +1,9 @@
 toprohect.sh
 lesson16/YC/terraform.tfstate*
 lesson16/YC/.terraform*
+lesson16/SBER/terraform.tfstate*
+lesson16/SBER/.terraform*
+lesson16/YC_PG/terraform.tfstate*
+lesson16/YC_PG/.terraform*
+
 
