@@ -1,0 +1,7 @@
+#- hosts: greenplum_mdw
+- hosts: role_greenplum_all
+  become: yes
+  become_method: sudo
+  become_user: root
+  roles:
+    - ../ROLES/GREENPLUM

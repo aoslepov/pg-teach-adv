@@ -1,0 +1,13 @@
+
+[greenplum_mdw]
+cdw ansible_host=158.160.113.217 inter_name="cdw"
+scdw ansible_host=158.160.124.171 inter_name="scdw"
+
+
+[greenplum_sdw]
+sdw1 ansible_host=158.160.111.53 inter_name="cdw"
+sdw2 ansible_host=158.160.113.145 inter_name="cdw"
+
+[role_greenplum_all:children]
+greenplum_mdw
+greenplum_sdw

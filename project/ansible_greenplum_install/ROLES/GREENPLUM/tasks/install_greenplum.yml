@@ -1,0 +1,113 @@
+- name: greenplum download
+  ansible.builtin.shell:
+    cmd: sudo wget "https://github.com/aoslepov/greenplum-ubuntu/releases/download/greenplum-7/gpdb-2004.tar.gz" -O /usr/local/gpdb-2004.tar.gz; cd /usr/local &&  sudo tar -xzvf /usr/local/gpdb-2004.tar.gz && rm /usr/local/gpdb-2004.tar.gz
+
+- name: create group greenplum
+  ansible.builtin.group:
+    name: gpadmin
+    state: present
+
+- name: create greenplum users
+  ansible.builtin.user:
+    name: gpadmin
+    groups: gpadmin
+    shell: /bin/bash
+    append: no
+    password: "$y$j9T$lXUEtuHIWUMKoYt6JebHT1$zikw9hpSqtZNM.RIYl5Sa..mySiVKjsxNMUCFdpL3z0"
+    update_password: always
+
+
+- name: config hostfile
+  ansible.builtin.copy:
+    src: hostfile
+    dest: /usr/local/gpdb/hostfile
+    owner: gpadmin
+    group: gpadmin
+
+- name: config coordinator segment
+  ansible.builtin.template:
+    src: gpinitsystem_config
+    dest: /usr/local/gpdb/gpinitsystem_config
+    owner: gpadmin
+    group: gpadmin
+
+
+- name: create data dirs
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    owner: gpadmin
+    group: gpadmin
+  loop:
+   - "/data"
+   - "/data/coordinator"
+   - "/data/mirror"
+   - "/home/gpadmin/.ssh"
+   - "/home/gpadmin/gpAdminLogs"
+
+- name: greenplum download
+  ansible.builtin.shell:
+    cmd: sudo chown -R gpadmin:gpadmin /usr/local/gpdb
+
+- name: generate ssh
+  community.crypto.openssh_keypair:
+    path: /home/gpadmin/.ssh/id_rsa
+    group: gpadmin
+    owner: gpadmin
+
+
+- name: getsshkey
+  ansible.builtin.fetch:
+    src: /home/gpadmin/.ssh/id_rsa.pub
+    dest: /tmp/ssh-key-{{inventory_hostname}}
+    flat: yes
+
+
+- name: config hostfile
+  ansible.builtin.copy:
+    src: /tmp/ssh-key-{{ hostvars[item]["inventory_hostname"]}}
+    dest: /tmp/ssh-key-{{ hostvars[item]["inventory_hostname"]}}
+  with_items:  '{{ groups["role_greenplum_all"] }}'
+
+
+- name: concat keys
+  ansible.builtin.shell:
+    cmd: cat /tmp/ssh-key-* | tee /home/gpadmin/.ssh/authorized_keys; chmod 600 /home/gpadmin/.ssh/authorized_keys; chown gpadmin:gpadmin /home/gpadmin/.ssh/authorized_keys
+
+
+- name: add know hosts
+  ansible.builtin.shell:
+    cmd: sudo su gpadmin -c 'ssh -o StrictHostKeyChecking=accept-new {{ hostvars[item]["inventory_hostname"]}} "exit"'
+  with_items:  '{{ groups["role_greenplum_all"] }}'
+
+
+- name: add know hosts
+  ansible.builtin.shell:
+    cmd: sudo su gpadmin -c 'ssh -o StrictHostKeyChecking=accept-new {{ hostvars[item]["ansible_host"]}} "exit"'
+  with_items:  '{{ groups["role_greenplum_all"] }}'
+
+
+- name: bashrc | gp envs
+  ansible.builtin.lineinfile:
+    state: present
+    dest: /home/gpadmin/.bashrc
+    regexp: 'source /usr/local/gpdb/greenplum_path.sh'
+    line: 'source /usr/local/gpdb/greenplum_path.sh'
+    create: yes
+
+
+- name: bashrc | coordinator path
+  ansible.builtin.lineinfile:
+    state: present
+    dest: /home/gpadmin/.bashrc
+    regexp: 'export COORDINATOR_DATA_DIRECTORY=/data/coordinator/gpseg-1'
+    line: 'export COORDINATOR_DATA_DIRECTORY=/data/coordinator/gpseg-1'
+    create: yes
+
+- name: greenplum chown
+  ansible.builtin.shell:
+    cmd: sudo chown -R gpadmin:gpadmin /usr/local/gpdb
+
+- name: greenplum chown
+  ansible.builtin.shell:
+    cmd: sudo chown -R gpadmin:gpadmin /data

@@ -1,0 +1,125 @@
+#- name: add ppa toolchain
+#  ansible.builtin.apt_repository:
+#    repo: ppa:ppa:ubuntu-toolchain-r/test
+
+
+- name: packages
+  ansible.builtin.apt:
+    update_cache: yes
+    pkg:
+        - "gcc-7"
+        - "g++-7"
+        - "mc"
+
+
+- name: packages
+  ansible.builtin.apt:
+    update_cache: yes
+    pkg:
+        - "bison"
+        - "ccache"
+        - "cmake"
+        - "curl"
+        - "flex"
+        - "git-core"
+        - "gcc"
+        - "g++"
+        - "krb5-kdc"
+        - "krb5-admin-server"
+        - "libkrb5-dev"
+        - "inetutils-ping"
+        - "libapr1-dev"
+        - "libbz2-dev"
+        - "libcurl4-gnutls-dev"
+        - "libevent-dev"
+        - "libpam-dev"
+        - "libperl-dev"
+        - "libreadline-dev"
+        - "libssl-dev"
+        - "libxerces-c-dev"
+        - "libxml2-dev"
+        - "libyaml-dev"
+        - "libzstd-dev"
+        - "locales"
+        - "net-tools"
+        - "ninja-build"
+        - "openssh-client"
+        - "openssh-server"
+        - "openssl"
+        - "pkg-config"
+        - "python3-dev"
+        - "python3-pip"
+        - "python3-psycopg2"
+        - "python3-psutil"
+        - "python3-yaml"
+        - "zlib1g-dev"
+
+
+- sysctl: name={{ item.pname }} value={{ item.value }} state=present sysctl_file=/etc/sysctl.conf sysctl_set=yes reload=yes
+  with_items:
+      - { pname: 'vm.overcommit_memory ', value: '2' }
+      - { pname: 'vm.overcommit_ratio', value: '95' }
+      - { pname: 'net.ipv4.ip_local_port_range', value: '10000 65535' }
+      - { pname: 'kernel.sem', value: '250 2048000 200 8192' }
+      - { pname: 'kernel.sysrq', value: '1' }
+      - { pname: 'kernel.core_uses_pid', value: '1' }
+      - { pname: 'kernel.msgmnb', value: '65536' }
+      - { pname: 'kernel.msgmax', value: '65536' }
+      - { pname: 'kernel.msgmni', value: '2048' }
+      - { pname: 'net.ipv4.tcp_syncookies', value: '1' }
+      - { pname: 'net.ipv4.conf.default.accept_source_route', value: '0' }
+      - { pname: 'net.ipv4.tcp_max_syn_backlog', value: '4096' }
+      - { pname: 'net.ipv4.conf.all.arp_filter', value: '1' }
+      - { pname: 'net.ipv4.ipfrag_high_thresh', value: '41943040' } 
+      - { pname: 'net.ipv4.ipfrag_low_thresh', value: '31457280' }
+      - { pname: 'net.ipv4.ipfrag_time', value: '60' }
+      - { pname: 'net.core.netdev_max_backlog', value: '10000' }
+      - { pname: 'net.core.rmem_max', value: '2097152' }
+      - { pname: 'net.core.wmem_max', value: '2097152' }
+      - { pname: 'vm.swappiness', value: '10' }
+      - { pname: 'vm.zone_reclaim_mode', value: '0' }
+      - { pname: 'vm.zone_reclaim_mode', value: '0' }
+      - { pname: 'vm.dirty_expire_centisecs', value: '500' }
+      - { pname: 'vm.dirty_writeback_centisecs', value: '100' }
+      - { pname: 'vm.dirty_background_ratio', value: '0' }
+      - { pname: 'vm.dirty_ratio', value: '0' }
+
+
+- name: Add or modify hard nofile limits for wildcard domain
+  community.general.pam_limits:
+    domain: '*'
+    limit_type: hard
+    limit_item: nofile
+    value: 1048576
+
+- name: Add or modify hard nofile limits for wildcard domain
+  community.general.pam_limits:
+    domain: '*'
+    limit_type: soft
+    limit_item: nofile
+    value: 1048576
+
+
+- name: Add or modify hard nofile limits for wildcard domain
+  community.general.pam_limits:
+    domain: '*'
+    limit_type: hard
+    limit_item: nproc
+    value: 1048576
+
+- name: Add or modify hard nofile limits for wildcard domain
+  community.general.pam_limits:
+    domain: '*'
+    limit_type: soft
+    limit_item: nproc
+    value: 1048576
+
+
+- name: hosts | add mdw+sdw
+  ansible.builtin.lineinfile:
+    state: present
+    dest: /etc/hosts
+    regexp: '{{ hostvars[item]["ansible_default_ipv4"]["address"] }}     {{ hostvars[item]["inventory_hostname"]}}'
+    line: '{{ hostvars[item]["ansible_default_ipv4"]["address"] }}     {{ hostvars[item]["inventory_hostname"]}}'
+    create: yes
+  with_items:  '{{ groups["role_greenplum_all"] }}'

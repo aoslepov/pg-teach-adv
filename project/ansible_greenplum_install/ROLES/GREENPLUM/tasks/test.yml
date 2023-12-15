@@ -1,0 +1,13 @@
+
+- name: add know hosts
+  ansible.builtin.shell:
+    cmd: sudo su gpadmin -c 'ssh -o StrictHostKeyChecking=accept-new {{ hostvars[item]["ansible_hostname"]}} "exit"'
+  with_items:  '{{ groups["role_greenplum_all"] }}'
+
+
+- debug: msg={{ hostvars[item]["ansible_hostname"]}}
+  with_items:  '{{ groups["role_greenplum_all"] }}'
+
+- name: greenplum download
+  ansible.builtin.shell:
+    cmd: sudo chown -R gpadmin:gpadmin /data
