@@ -1,0 +1,20 @@
+
+
+- name: haproxy packages install
+  ansible.builtin.apt:
+    update_cache: yes
+    pkg:
+        - "haproxy"
+        - "mc"
+
+- name: template haproxy
+  ansible.builtin.template:
+    src: haproxy.cfg
+    dest: /etc/haproxy/haproxy.cfg
+
+
+- name: haproxy test conf
+  ansible.builtin.shell:
+    cmd: haproxy -c -f /etc/haproxy/haproxy.cfg
+
+- systemd: name="haproxy" state=restarted daemon_reload=yes enabled=yes

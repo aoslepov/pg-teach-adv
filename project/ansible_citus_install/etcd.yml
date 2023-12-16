@@ -1,4 +1,3 @@
-#- hosts: greenplum_mdw
 - hosts: etcd
   become: yes
   become_method: sudo
