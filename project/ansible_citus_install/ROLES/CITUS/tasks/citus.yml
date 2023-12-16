@@ -1,0 +1,45 @@
+
+
+#- block:
+#  when: consul_pg_teach_master.stdout == "0"
+
+
+- name: citus package download
+  ansible.builtin.shell:
+    cmd: curl https://install.citusdata.com/community/deb.sh | sudo bash
+
+- name: citus install
+  ansible.builtin.apt:
+    update_cache: yes
+    pkg:
+        - "postgresql-16-citus-12.1"
+        - "python3-pip" 
+        - "libpq-dev" 
+        - "python3-dev" 
+        - "python3-psycopg2"
+        - "mc"
+
+- name: pip psycopg2+patroni
+  ansible.builtin.pip:
+    name:
+      - "psycopg2-binary"
+      - "patroni[etcd]"
+
+
+- name: citus | stop and delete default cluster
+  ansible.builtin.shell:
+    cmd: (sudo -u postgres pg_ctlcluster 16 main stop; sudo -u postgres pg_dropcluster 16 main) || exit 0
+
+
+- name: template patroni service
+  ansible.builtin.template:
+    src: patroni.service
+    dest: /etc/systemd/system/patroni.service
+
+- name: config etcd
+  ansible.builtin.template:
+    src: patroni.yml
+    dest: /etc/patroni.yml
+
+
+- systemd: name="patroni" state=restarted daemon_reload=yes enabled=yes

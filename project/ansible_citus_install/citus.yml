@@ -1,0 +1,8 @@
+#- hosts: greenplum_mdw
+- hosts: citus
+  become: yes
+  become_method: sudo
+  become_user: root
+  serial: 1
+  roles:
+    - ../ROLES/CITUS

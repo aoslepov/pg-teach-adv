@@ -6,4 +6,7 @@ lesson16/SBER/.terraform*
 lesson16/YC_PG/terraform.tfstate*
 lesson16/YC_PG/.terraform*
 project/terraform/.terraform*
-
+project/terraform/.terraform/terraform.tfstate*
+project/terraform/terraform.tfstate*
+project/terraform/terraform.tfstate
+project/terraform/terraform.tfstate.backup

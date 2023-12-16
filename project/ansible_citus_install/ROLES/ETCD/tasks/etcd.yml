@@ -1,0 +1,21 @@
+- name: package etcd
+  ansible.builtin.apt:
+    update_cache: yes
+    pkg:
+        - "etcd"
+
+- systemd: name="etcd" state=stopped daemon_reload=yes enabled=yes
+
+- name: config etcd
+  ansible.builtin.template:
+    src: etcd
+    dest: /etc/default/etcd
+
+- systemd: name="etcd" state=started
+
+- name: etcd status
+  ansible.builtin.shell:
+    cmd: etcdctl cluster-health
+  register: etcd_status
+
+- debug: msg={{etcd_status}}
