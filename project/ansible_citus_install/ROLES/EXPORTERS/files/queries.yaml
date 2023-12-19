@@ -1,0 +1,180 @@
+pg_stat_database:
+  query: "select datid,  datname, numbackends, xact_commit, xact_rollback, blks_read, blks_hit, tup_returned, tup_fetched, tup_inserted, tup_updated, tup_deleted, conflicts, temp_files, temp_bytes, deadlocks, checksum_failures, checksum_last_failure, blk_read_time, blk_write_time, session_time, active_time, idle_in_transaction_time, sessions, sessions_abandoned, sessions_fatal, sessions_killed from pg_stat_database"
+  metrics:
+    - datname:
+        usage: "LABEL"
+    - xact_commit:
+        usage: "COUNTER"
+    - blks_read:
+        usage: "COUNTER"
+    - blks_hit:
+        usage: "COUNTER"
+    - tup_returned:
+        usage: "COUNTER"
+    - tup_fetched:
+        usage: "COUNTER"
+    - tup_inserted:
+        usage: "COUNTER"
+    - tup_updated:
+        usage: "COUNTER"
+    - tup_deleted:
+        usage: "COUNTER"
+    - temp_bytes:
+        usage: "COUNTER"
+
+pg_postmaster:
+    query: select pg_postmaster_start_time as start_time_seconds from pg_postmaster_start_time();
+    master: true
+    metrics:
+        - start_time_seconds:
+            usage: "GAUGE"
+            description: "time at which postmaster started"
+
+
+citus_citus_shards:
+    query: "SELECT table_name as table_name, shardid as shardid, shard_name as shard_name, citus_table_type as citus_table_type, colocation_id as colocation_id, nodename as nodename, nodeport as nodeport, shard_size as shard_size from citus_shards"
+    metrics:
+        - table_name:
+            usage: "LABEL"
+        - shard_name:
+            usage: "LABEL"
+        - citus_table_type:
+            usage: "LABEL"
+        - nodename:
+            usage: "LABEL"
+        - nodeport:
+            usage: "LABEL"
+        - colocation_id:
+            usage: "LABEL"
+        - citus_shards_shardid:
+            usage: "LABEL"
+
+citus_pg_dist_node:
+    query: "SELECT nodeid as nodeid, groupid as groupid, nodename as nodename, nodeport as nodeport, noderack as noderack, hasmetadata as hasmetadata, isactive as isactive, noderole as noderole, nodecluster as nodecluster,metadatasynced as metadatasynced,shouldhaveshards as shouldhaveshards from pg_dist_node"
+    metrics:
+        - groupid:
+            usage: "LABEL"
+        - nodename:
+            usage: "LABEL"
+        - nodeport:
+            usage: "LABEL"
+        - noderack:
+            usage: "LABEL"
+        - hasmetadata:
+            usage: "LABEL"
+        - isactive:
+            usage: "LABEL"
+        - noderole:
+            usage: "LABEL"
+        - nodecluster:
+            usage: "LABEL"
+        - metadatasynced:
+            usage: "LABEL"
+        - shouldhaveshards:
+            usage: "LABEL"
+
+
+citus_citus_tables:
+    query: "SELECT table_name,citus_table_type, distribution_column, colocation_id, table_size, shard_count, table_owner, access_method,table_size FROM citus_tables"
+    metrics:
+        - table_name:
+            usage: "LABEL"
+        - citus_table_type:
+            usage: "LABEL"
+        - distribution_column:
+            usage: "LABEL"
+        - colocation_id:
+            usage: "LABEL"
+        - table_owner:
+            usage: "LABEL"
+        - access_method:
+            usage: "LABEL"
+        - table_size:
+            usage: "LABEL"
+
+
+citus_pg_dist_colocation:
+    query: "SELECT colocationid, shardcount, replicationfactor, distributioncolumntype, distributioncolumncollation from pg_dist_colocation"
+    metrics:
+        - colocationid:
+            usage: "LABEL"
+        - shardcount:
+            usage: "COUNTER"
+        - replicationfactor:
+            usage: "COUNTER"
+        - distributioncolumntype:
+            usage: "COUNTER"
+        - distributioncolumncollation:
+            usage: "COUNTER"
+
+
+citus_pg_dist_rebalance_strategy:
+    query: "SELECT name, default_strategy, shard_cost_function, node_capacity_function, shard_allowed_on_node_function, default_threshold, minimum_threshold, improvement_threshold FROM pg_dist_rebalance_strategy"
+    metrics:
+        - name:
+            usage: "LABEL"
+        - default_strategy:
+            usage: "LABEL"
+        - shard_cost_function:
+            usage: "LABEL"
+        - node_capacity_function:
+            usage: "LABEL"
+        - shard_allowed_on_node_function:
+            usage: "LABEL"
+        - default_threshold:
+            usage: "COUNTER"
+        - minimum_threshold:
+            usage: "COUNTER"
+        - improvement_threshold:
+            usage: "COUNTER"
+
+
+citus_dist_stats_activity_worker_queries:
+    query: "select query,  wait_event_type, wait_event from citus_stat_activity where is_worker_query='t' and state='active';"
+    metrics:
+        - query:
+            usage: "LABEL"
+        - wait_event_type:
+            usage: "LABEL"
+        - wait_event:
+            usage: "LABEL"
+
+
+citus_dist_stats_activity_worker_top_waits_queries:
+    query: "SELECT query, wait_event, wait_event_type, count(*)   FROM citus_stat_activity  WHERE is_worker_query='t' and state='active'  GROUP BY wait_event, wait_event_type,query  ORDER BY count(*) desc limit 10"
+    metrics:
+        - query:
+            usage: "LABEL"
+        - wait_event_type:
+            usage: "LABEL"
+        - wait_event:
+            usage: "LABEL"
+
+
+citus_dist_stats_activity_worker_connections_by_client:
+    query: "SELECT client_addr, count(*) as cnt   FROM citus_stat_activity  WHERE is_worker_query='t' and state='active' GROUP BY client_addr ;"
+    metrics:
+        - client_addr:
+            usage: "LABEL"
+        - cnt:
+            usage: "COUNTER"
+
+
+citus_lock_waits:
+    query: "SELECT waiting_gpid, blocking_gpid, blocked_statement, current_statement_in_blocking_process, waiting_nodeid, blocking_nodeid FROM citus_lock_waits"
+    metrics:
+        - waiting_gpid:
+            usage: "LABEL"
+        - blocking_gpid:
+            usage: "LABEL"
+        - blocked_statement:
+            usage: "LABEL"
+        - current_statement_in_blocking_process:
+            usage: "LABEL"
+        - waiting_nodeid:
+            usage: "LABEL"
+        - blocking_nodeid:
+            usage: "LABEL"
+
+
+

@@ -1,16 +1,16 @@
 
 [etcd]
-etcd-01 ansible_host=158.160.124.70
+etcd-01 ansible_host=51.250.90.131
 #etcd-02 ansible_host=158.160.45.56
 #etcd-03 ansible_host=178.154.202.172
 
 [citus_coord]
-citus-coord-01 ansible_host=158.160.123.18 citus_groupid=0
+citus-coord-01 ansible_host=158.160.127.75 citus_groupid=0
 #citus-coord-02 ansible_host=158.160.100.93 citus_groupid=0
 
 [citus_worker]
-citus-worker-01 ansible_host=158.160.121.175 citus_groupid=1
-citus-worker-02 ansible_host=158.160.116.200 citus_groupid=2
+citus-worker-01 ansible_host=158.160.119.193 citus_groupid=1
+citus-worker-02 ansible_host=158.160.53.154 citus_groupid=2
 #citus-worker-03 ansible_host=158.160.112.143 citus_groupid=2
 
 [citus_all:children]
@@ -18,5 +18,8 @@ citus_coord
 citus_worker
 
 [haproxy]
-haproxy-01 ansible_host=158.160.113.217
+haproxy-01 ansible_host=158.160.103.147
 #haproxy-02 ansible_host=158.160.117.77
+
+[monitoring]
+monitoring ansible_host=84.201.172.29

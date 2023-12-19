@@ -1,0 +1,36 @@
+
+
+- name: copy odyssey
+  ansible.builtin.copy:
+    src: odyssey
+    dest: /usr/local/bin/odyssey
+    mode: 666
+
+- name: template odyssey
+  ansible.builtin.template:
+    src: odyssey.conf
+    dest: /etc/odyssey.conf
+
+
+- name: wget libpromhttp
+  ansible.builtin.shell:
+    cmd: wget https://github.com/digitalocean/prometheus-client-c/releases/download/v0.1.3/libpromhttp-dev-0.1.3-Linux.deb -O /tmp/libpromhttp-dev-0.1.3-Linux.deb
+
+- name: wget libpromhttp
+  ansible.builtin.shell:
+    cmd: wget https://github.com/digitalocean/prometheus-client-c/releases/download/v0.1.3/libprom-dev-0.1.3-Linux.deb -O /tmp/libprom-dev-0.1.3-Linux.deb
+
+
+- name: wget libpromhttp
+  ansible.builtin.shell:
+    cmd: apt install -y /tmp/libprom-dev-0.1.3-Linux.deb /tmp/libpromhttp-dev-0.1.3-Linux.deb
+
+
+
+- name: copy odyssey service
+  ansible.builtin.copy:
+    src: odyssey.service
+    dest: /etc/systemd/system/odyssey.service
+
+
+- systemd: name="odyssey" state=restarted daemon_reload=yes enabled=yes

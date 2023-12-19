@@ -41,7 +41,14 @@ variable "zone_a_hostnames" {
             "name" = "haproxy-01",
             "cores" = 2,
             "mem" = 2
+        },
+
+        "monitoring" = {
+            "name" = "monitoring",
+            "cores" = 2,
+            "mem" = 2
         }
+
 
     }
 }

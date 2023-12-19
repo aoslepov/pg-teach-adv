@@ -1,0 +1,183 @@
+pg_stat_database:
+  query: "select datid,  datname, numbackends, xact_commit, xact_rollback, blks_read, blks_hit, tup_returned, tup_fetched, tup_inserted, tup_updated, tup_deleted, conflicts, temp_files, temp_bytes, deadlocks, checksum_failures, checksum_last_failure, blk_read_time, blk_write_time, session_time, active_time, idle_in_transaction_time, sessions, sessions_abandoned, sessions_fatal, sessions_killed from pg_stat_database"
+  metrics:
+    - datname:
+        usage: "LABEL"
+    - xact_commit:
+        usage: "COUNTER"
+    - blks_read:
+        usage: "COUNTER"
+    - blks_hit:
+        usage: "COUNTER"
+    - tup_returned:
+        usage: "COUNTER"
+    - tup_fetched:
+        usage: "COUNTER"
+    - tup_inserted:
+        usage: "COUNTER"
+    - tup_updated:
+        usage: "COUNTER"
+    - tup_deleted:
+        usage: "COUNTER"
+    - temp_bytes:
+        usage: "COUNTER"
+
+pg_postmaster:
+    query: select pg_postmaster_start_time as start_time_seconds from pg_postmaster_start_time();
+    master: true
+    metrics:
+        - start_time_seconds:
+            usage: "GAUGE"
+            description: "time at which postmaster started"
+
+
+citus_citus_shards:
+    query: "SELECT table_name as table_name, shardid as shardid, shard_name as shard_name, citus_table_type as citus_table_type, colocation_id as colocation_id, nodename as nodename, nodeport as nodeport, shard_size as shard_size from citus_shards"
+    metrics:
+        - table_name:
+            usage: "LABEL"
+        - shard_name:
+            usage: "LABEL"
+        - citus_table_type:
+            usage: "LABEL"
+        - nodename:
+            usage: "LABEL"
+        - nodeport:
+            usage: "LABEL"
+        - colocation_id:
+            usage: "LABEL"
+        - citus_shards_shardid:
+            usage: "LABEL"
+
+citus_pg_dist_node:
+    query: "SELECT nodeid as nodeid, groupid as groupid, nodename as nodename, nodeport as nodeport, noderack as noderack, hasmetadata as hasmetadata, isactive as isactive, noderole as noderole, nodecluster as nodecluster,metadatasynced as metadatasynced,shouldhaveshards as shouldhaveshards from pg_dist_node"
+    metrics:
+        - groupid:
+            usage: "LABEL"
+        - nodename:
+            usage: "LABEL"
+        - nodeport:
+            usage: "LABEL"
+        - noderack:
+            usage: "LABEL"
+        - hasmetadata:
+            usage: "LABEL"
+        - isactive:
+            usage: "LABEL"
+        - noderole:
+            usage: "LABEL"
+        - nodecluster:
+            usage: "LABEL"
+        - metadatasynced:
+            usage: "LABEL"
+        - shouldhaveshards:
+            usage: "LABEL"
+
+
+citus_citus_tables:
+    query: "SELECT table_name,citus_table_type, distribution_column, colocation_id, table_size, shard_count, table_owner, access_method,table_size FROM citus_tables"
+    metrics:
+        - table_name:
+            usage: "LABEL"
+        - citus_table_type:
+            usage: "LABEL"
+        - distribution_column:
+            usage: "LABEL"
+        - colocation_id:
+            usage: "LABEL"
+        - table_owner:
+            usage: "LABEL"
+        - access_method:
+            usage: "LABEL"
+        - table_size:
+            usage: "LABEL"
+
+
+citus_pg_dist_colocation:
+    query: "SELECT colocationid, shardcount, replicationfactor, distributioncolumntype, distributioncolumncollation from pg_dist_colocation"
+    metrics:
+        - colocationid:
+            usage: "LABEL"
+        - shardcount:
+            usage: "COUNTER"
+        - replicationfactor:
+            usage: "COUNTER"
+        - distributioncolumntype:
+            usage: "COUNTER"
+        - distributioncolumncollation:
+            usage: "COUNTER"
+
+
+citus_pg_dist_rebalance_strategy:
+    query: "SELECT name, default_strategy, shard_cost_function, node_capacity_function, shard_allowed_on_node_function, default_threshold, minimum_threshold, improvement_threshold FROM pg_dist_rebalance_strategy"
+    metrics:
+        - name:
+            usage: "LABEL"
+        - default_strategy:
+            usage: "LABEL"
+        - shard_cost_function:
+            usage: "LABEL"
+        - node_capacity_function:
+            usage: "LABEL"
+        - shard_allowed_on_node_function:
+            usage: "LABEL"
+        - default_threshold:
+            usage: "COUNTER"
+        - minimum_threshold:
+            usage: "COUNTER"
+        - improvement_threshold:
+            usage: "COUNTER"
+
+
+citus_dist_stat_activity:
+    query: "SELECT global_pid, nodeid, is_worker_query, datid, datname, pid, leader_pid, usesysid, usename, application_name, client_addr, client_hostname, client_port, backend_start, xact_start, query_start, state_change, wait_event_type, wait_event, state , backend_xid ,backend_xmin, query_id, query, backend_type FROM citus_dist_stat_activity"
+    metrics:
+        - is_worker_query:
+            usage: "LABEL"
+        - datname:
+            usage: "LABEL"
+        - pid:
+            usage: "LABEL"
+        - nodeid:
+            usage: "LABEL"
+        - datid:
+            usage: "LABEL"
+        - leader_pid:
+            usage: "LABEL"
+        - usesysid:
+            usage: "LABEL"
+        - usename:
+            usage: "LABEL"
+        - application_name:
+            usage: "LABEL"
+        - client_addr:
+            usage: "LABEL"
+        - client_hostname:
+            usage: "LABEL"
+        - client_port:
+            usage: "LABEL"
+        - backend_start:
+            usage: "LABEL"
+        - xact_start:
+            usage: "LABEL"
+        - query_start:
+            usage: "LABEL"
+        - state_change:
+            usage: "LABEL"
+        - wait_event_type:
+            usage: "LABEL"
+        - wait_event:
+            usage: "LABEL"
+        - state:
+            usage: "LABEL"
+        - query:
+            usage: "LABEL"
+        - backend_type:
+            usage: "LABEL"
+        - backend_xid:
+            usage: "LABEL"
+        - backend_xmin:
+            usage: "LABEL"
+        - query_id:
+            usage: "LABEL"
+

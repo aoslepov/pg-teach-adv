@@ -1,0 +1,5 @@
+node_exporter_pkg: node_exporter-1.6.1.linux-amd64
+
+postgres_login_string: 'postgresql://postgres:pgsuper@127.0.0.1:5432/postgres?sslmode=disable'
+exporter_login_string: 'postgresql://postgres:otus123@{{ ansible_default_ipv4.address }}:5432/citus?sslmode=disable'
+
