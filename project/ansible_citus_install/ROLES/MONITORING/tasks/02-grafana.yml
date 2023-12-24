@@ -62,6 +62,8 @@
    - "postgresql/pg-database.json"
    - "postgresql/pgbouncer_exporter.json"
    - "postgresql/pg-full.json"
+   - "postgresql/odyssey.json"
+   - "postgresql/citus.json"
 
 
 - name: grafana enable

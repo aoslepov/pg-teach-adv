@@ -1,0 +1,12 @@
+PGPASSWORD=otus123 pgbench -U admin --host=127.0.0.1 --port=6432 -i citus
+PGPASSWORD=otus123 pgbench -U postgres --host=127.0.0.1 --port=6432 -c10 -C --jobs=4 --progress=4 --time=600 --verbose-errors  citus
+
+
+SELECT create_distributed_table('pgbench_accounts', 'aid');
+SELECT truncate_local_data_after_distributing_table($$public.pgbench_accounts$$);
+SELECT create_distributed_table('pgbench_branches', 'bid');
+SELECT truncate_local_data_after_distributing_table($$public.pgbench_branches$$);
+SELECT create_distributed_table('pgbench_history', 'tid');
+SELECT truncate_local_data_after_distributing_table($$public.pgbench_history$$);
+SELECT create_distributed_table('pgbench_tellers', 'tid');
+SELECT truncate_local_data_after_distributing_table($$public.pgbench_tellers$$);
