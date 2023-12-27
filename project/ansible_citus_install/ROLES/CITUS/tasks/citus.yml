@@ -1,8 +1,5 @@
 
 
-#- block:
-#  when: consul_pg_teach_master.stdout == "0"
-
 
 - name: citus package download
   ansible.builtin.shell:
