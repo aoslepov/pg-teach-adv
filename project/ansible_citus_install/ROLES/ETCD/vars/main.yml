@@ -1,3 +1,3 @@
-#etcd_cluster_seeds: 'etcd-01=http://etcd-01:2380,etcd-02=http://etcd-02:2380,etcd-03=http://etcd-03:2380'
+etcd_cluster_seeds: 'etcd-01=http://etcd-01:2380,etcd-02=http://etcd-02:2380,etcd-03=http://etcd-03:2380'
 
-etcd_cluster_seeds: 'etcd-01=http://etcd-01:2380'
+#etcd_cluster_seeds: 'etcd-01=http://etcd-01:2380'

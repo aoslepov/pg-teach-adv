@@ -8,6 +8,8 @@ data "yandex_compute_image" "ubuntu_image" {
 
 
 
+
+
 variable "zone_a_hostnames" {
 
     default = {
@@ -40,11 +42,14 @@ variable "zone_a_hostnames" {
             "cores" = 2,
             "mem" = 2
         },
+
         "monitoring" = {
             "name" = "monitoring",
             "cores" = 2,
             "mem" = 2
         }
+
+
     }
 }
 
@@ -68,7 +73,7 @@ variable "zone_b_hostnames" {
         "citus-worker-03" = {
             "name" = "citus-worker-03",
             "cores" = 2,
-            "mem" = 4
+            "mem" = 2
         },
 
         "haproxy-02" = {

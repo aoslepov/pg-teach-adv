@@ -44,17 +44,30 @@ variable "etcd_hostnames" {
         "citus-worker-01" = {
             "name" = "citus-worker-01",
             "cores" = 2,
-            "mem" = 2,
+            "mem" = 4,
             "subnet" = "data.yandex_vpc_subnet.default-ru-central1-a.id"
         },
         "citus-worker-02" = {
             "name" = "citus-worker-02",
             "cores" = 2,
-            "mem" = 2,
+            "mem" = 4,
             "subnet" = "data.yandex_vpc_subnet.default-ru-central1-a.id"
         },
         "citus-worker-03" = {
             "name" = "citus-worker-03",
+            "cores" = 2,
+            "mem" = 4,
+            "subnet" = "data.yandex_vpc_subnet.default-ru-central1-a.id"
+        },
+        "haproxy-01" = {
+            "name" = "haproxy-01",
+            "cores" = 2,
+            "mem" = 2,
+            "subnet" = "data.yandex_vpc_subnet.default-ru-central1-a.id"
+        },
+
+        "monitoring" = {
+            "name" = "monitoring",
             "cores" = 2,
             "mem" = 2,
             "subnet" = "data.yandex_vpc_subnet.default-ru-central1-a.id"
@@ -69,32 +82,44 @@ variable "zone_a_hostnames" {
         "etcd01" = {
             "name" = "etcd-01",
             "cores" = 2,
-            "mem" = 2
+            "mem" = 2,
+            "subnet" = "data.yandex_vpc_subnet.default-ru-central1-a.id"
         },
 
         "citus-coord-01" = {
             "name" = "citus-coord-01",
             "cores" = 2,
-            "mem" = 2
+            "mem" = 2,
+            "subnet" = "data.yandex_vpc_subnet.default-ru-central1-a.id"
         },
 
         "citus-worker-01" = {
             "name" = "citus-worker-01",
             "cores" = 2,
-            "mem" = 2
+            "mem" = 4,
+            "subnet" = "data.yandex_vpc_subnet.default-ru-central1-a.id"
         },
 
         "citus-worker-02" = {
             "name" = "citus-worker-02",
             "cores" = 2,
-            "mem" = 2
+            "mem" = 4,
+            "subnet" = "data.yandex_vpc_subnet.default-ru-central1-a.id"
         },
 
         "haproxy-01" = {
             "name" = "haproxy-01",
             "cores" = 2,
-            "mem" = 2
+            "mem" = 2,
+            "subnet" = "data.yandex_vpc_subnet.default-ru-central1-a.id"
+        },
+        "monitoring" = {
+            "name" = "monitoring",
+            "cores" = 2,
+            "mem" = 2,
+            "subnet" = "data.yandex_vpc_subnet.default-ru-central1-a.id"
         }
+
 
     }
 }
@@ -107,25 +132,29 @@ variable "zone_b_hostnames" {
         "etcd02" = {
             "name" = "etcd-02",
             "cores" = 2,
-            "mem" = 2
+            "mem" = 2,
+            "subnet" = "data.yandex_vpc_subnet.default-ru-central1-b.id"
         },
 
         "citus-coord-02" = {
             "name" = "citus-coord-02",
             "cores" = 2,
-            "mem" = 2
+            "mem" = 2,
+            "subnet" = "data.yandex_vpc_subnet.default-ru-central1-b.id"
         },
 
         "citus-worker-03" = {
             "name" = "citus-worker-03",
             "cores" = 2,
-            "mem" = 2
+            "mem" = 4,
+            "subnet" = "data.yandex_vpc_subnet.default-ru-central1-b.id"
         },
 
         "haproxy-02" = {
             "name" = "haproxy-02",
             "cores" = 2,
-            "mem" = 2
+            "mem" = 2,
+            "subnet" = "data.yandex_vpc_subnet.default-ru-central1-b.id"
         }
 
     }
@@ -138,7 +167,8 @@ variable "zone_c_hostnames" {
         "etcd03" = {
             "name" = "etcd-03",
             "cores" = 2,
-            "mem" = 2
+            "mem" = 2,
+            "subnet" = "data.yandex_vpc_subnet.default-ru-central1-c.id"
         }
 
 
