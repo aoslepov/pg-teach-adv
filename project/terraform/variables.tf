@@ -71,6 +71,13 @@ variable "zone_b_hostnames" {
             "mem" = 4
         },
 
+        "citus-worker-04" = {
+            "name" = "citus-worker-04",
+            "cores" = 2,
+            "mem" = 4
+        },
+
+
         "haproxy-02" = {
             "name" = "haproxy-02",
             "cores" = 2,
